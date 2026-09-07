@@ -15,6 +15,7 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [stickyMenu, setStickyMenu] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const { openCartModal } = useCartModalContext();
   const router = useRouter();
 
@@ -38,6 +39,20 @@ const Header = () => {
     window.addEventListener("scroll", handleStickyMenu);
     return () => window.removeEventListener("scroll", handleStickyMenu);
   }, []);
+
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("tech-store-theme");
+    const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    const nextDarkMode = savedTheme ? savedTheme === "dark" : systemPrefersDark;
+    setDarkMode(nextDarkMode);
+    document.documentElement.classList.toggle("dark", nextDarkMode);
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", darkMode);
+    localStorage.setItem("tech-store-theme", darkMode ? "dark" : "light");
+  }, [darkMode]);
 
   const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -64,7 +79,7 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed left-0 top-0 w-full z-9999 bg-white transition-all ease-in-out duration-300 ${
+      className={`fixed left-0 top-0 w-full z-9999 bg-white dark:bg-slate-900 transition-all ease-in-out duration-300 ${
         stickyMenu && "shadow"
       }`}
     >
@@ -132,6 +147,23 @@ const Header = () => {
 
           {/* <!-- header top right --> */}
           <div className="flex w-full lg:w-auto items-center gap-7.5">
+              <button
+                type="button"
+                aria-label="Toggle dark mode"
+                onClick={() => setDarkMode((prev) => !prev)}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-3 bg-white text-dark hover:border-blue hover:text-blue dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              >
+                {darkMode ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="fill-current">
+                    <path d="M12 2.75C11.5858 2.75 11.25 3.08579 11.25 3.5V4.75C11.25 5.16421 11.5858 5.5 12 5.5C12.4142 5.5 12.75 5.16421 12.75 4.75V3.5C12.75 3.08579 12.4142 2.75 12 2.75ZM12 18.5C11.5858 18.5 11.25 18.8358 11.25 19.25V20.5C11.25 20.9142 11.5858 21.25 12 21.25C12.4142 21.25 12.75 20.9142 12.75 20.5V19.25C12.75 18.8358 12.4142 18.5 12 18.5ZM5.5 11.25C5.08579 11.25 4.75 11.5858 4.75 12C4.75 12.4142 5.08579 12.75 5.5 12.75H6.75C7.16421 12.75 7.5 12.4142 7.5 12C7.5 11.5858 7.16421 11.25 6.75 11.25H5.5ZM17.25 11.25C16.8358 11.25 16.5 11.5858 16.5 12C16.5 12.4142 16.8358 12.75 17.25 12.75H18.5C18.9142 12.75 19.25 12.4142 19.25 12C19.25 11.5858 18.9142 11.25 18.5 11.25H17.25ZM6.03553 6.96447C5.74264 6.67157 5.26777 6.67157 4.97487 6.96447C4.68198 7.25736 4.68198 7.73224 4.97487 8.02513L5.68299 8.73325C5.97588 9.02614 6.45075 9.02614 6.74364 8.73325C7.03654 8.44036 7.03654 7.96548 6.74364 7.67259L6.03553 6.96447ZM17.02513 17.9541C16.73224 17.6612 16.2574 17.6612 15.9645 17.9541C15.6716 18.247 15.6716 18.7219 15.9645 19.0148L16.6726 19.7229C16.9655 20.0158 17.4404 20.0158 17.7332 19.7229C18.0261 19.4301 18.0261 18.9552 17.7332 18.6623L17.02513 17.9541ZM17.9541 6.03553C18.247 5.74264 18.7219 5.74264 19.0148 6.03553C19.3077 6.32842 19.3077 6.80329 19.0148 7.09618L18.3066 7.8043C18.0137 8.09719 17.5389 8.09719 17.246 7.8043C16.9531 7.51141 16.9531 7.03653 17.246 6.74364L17.9541 6.03553ZM6.96447 17.02513C7.25736 16.73224 7.73224 16.73224 8.02513 17.02513C8.31802 17.31802 8.31802 17.7929 8.02513 18.0858L7.31701 18.7939C7.02412 19.0868 6.54924 19.0868 6.25635 18.7939C5.96346 18.501 5.96346 18.0262 6.25635 17.7333L6.96447 17.02513ZM12 8.5C10.067 8.5 8.5 10.067 8.5 12C8.5 13.933 10.067 15.5 12 15.5C13.933 15.5 15.5 13.933 15.5 12C15.5 10.067 13.933 8.5 12 8.5Z" fill="currentColor" />
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="fill-current">
+                    <path d="M21.5 14.5C20.6768 14.9329 19.7688 15.178 18.8125 15.178C14.1612 15.178 10.3899 11.4067 10.3899 6.75536C10.3899 5.79903 10.635 4.89109 11.068 4.06787C7.22717 4.47708 4.25 7.77874 4.25 11.7498C4.25 16.2181 7.78174 19.7498 12.25 19.7498C16.221 19.7498 19.5227 16.7727 19.9319 12.9318C19.0494 13.7192 17.8857 14.1918 16.6667 14.1918C15.9639 14.1918 15.2847 14.0622 14.6452 13.8248C15.0316 13.3542 15.3246 12.7963 15.4897 12.1868C15.7127 11.4086 15.6603 10.5581 15.3687 9.82989C14.9751 8.87042 14.2838 8.03339 13.4066 7.50414C12.7921 7.16163 12.1268 6.97094 11.4528 6.95864C11.1091 6.95242 10.7615 6.99464 10.4216 7.09567C10.6963 7.8355 10.8384 8.63733 10.8379 9.45611C10.8362 12.0673 8.84072 14.0829 6.24174 14.1438C5.35967 14.1678 4.48564 13.9976 3.67699 13.6463C3.45915 14.7264 3.15474 15.7705 2.76612 16.7684C4.69666 18.6339 7.51897 19.75 10.5 19.75C15.1133 19.75 18.8628 16.3902 20.2769 12.2254C20.7158 13.1775 21.1181 14.1777 21.5 14.5Z" fill="currentColor" />
+                  </svg>
+                )}
+              </button>
+
             <div className="hidden xl:flex items-center gap-3.5">
               <svg
                 width="24"

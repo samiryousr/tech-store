@@ -11,13 +11,41 @@
     @apply font-euclid-circular-a font-normal text-base text-dark-3 relative z-1;
     background: #ffffff;
     color: #111827;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
-  [class*="bg-white"],
-  [class*="bg-gray-1"],
-  [class*="bg-gray-2"] {
-    border: 1px solid rgba(17, 24, 39, 0.12);
-    box-shadow: 0 10px 24px rgba(17, 24, 39, 0.05);
+  html.dark body {
+    background: #0b1220;
+    color: #e5e7eb;
+  }
+
+  html.dark .text-dark,
+  html.dark .text-dark-3,
+  html.dark .text-dark-4,
+  html.dark .text-dark-5,
+  html.dark .text-dark-2 {
+    color: #e5e7eb !important;
+  }
+
+  html.dark .bg-white,
+  html.dark .bg-gray-1,
+  html.dark .bg-gray-2 {
+    background-color: #111827 !important;
+    border-color: rgba(148, 163, 184, 0.18) !important;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.34);
+  }
+
+  html.dark .border-gray-3,
+  html.dark .border-gray-4,
+  html.dark .border-gray-1 {
+    border-color: rgba(148, 163, 184, 0.2) !important;
+  }
+
+  html.dark [class*="bg-white"],
+  html.dark [class*="bg-gray-1"],
+  html.dark [class*="bg-gray-2"] {
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.3);
   }
 
   a,

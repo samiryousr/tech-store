@@ -51,7 +51,7 @@ const PromoBanner = () => {
               <Image
                 src={getProductImage(laptop)}
                 alt={laptop?.title ?? "product"}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-[120px] h-auto object-contain"
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-[120px] h-auto object-contain transition-transform duration-500 hover:scale-105"
                 width={220}
                 height={220}
               />
@@ -140,7 +140,7 @@ const PromoBanner = () => {
               <Image
                 src={getProductImage(featuredProduct)}
                 alt={featuredProduct?.title ?? "product"}
-                className="absolute bottom-0 right-0 sm:right-6 lg:right-20 -z-1 object-contain w-[160px] sm:w-[220px] lg:w-[360px] h-auto"
+                className="absolute bottom-0 right-0 sm:right-6 lg:right-20 -z-1 object-contain w-[160px] sm:w-[220px] lg:w-[360px] h-auto transition-transform duration-500 hover:scale-105"
                 width={360}
                 height={430}
               />
@@ -153,7 +153,7 @@ const PromoBanner = () => {
                 <Image
                   src={getProductImage(laptop)}
                   alt={laptop?.title ?? "product"}
-                  className="absolute top-1/2 -translate-y-1/2 left-2 sm:left-6 -z-1 object-contain w-[110px] sm:w-[180px] lg:w-[220px] h-auto"
+                  className="absolute top-1/2 -translate-y-1/2 left-2 sm:left-6 -z-1 object-contain w-[110px] sm:w-[180px] lg:w-[220px] h-auto transition-transform duration-500 hover:scale-105"
                   width={241}
                   height={241}
                 />
