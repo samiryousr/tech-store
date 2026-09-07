@@ -39,7 +39,7 @@ const BestSeller = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-7.5">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-x-4 sm:gap-y-6 xl:gap-7.5">
           {/* <!-- Best Sellers item --> */}
           {products.map((item) => (
             <SingleGridItem item={item} key={item.id} />

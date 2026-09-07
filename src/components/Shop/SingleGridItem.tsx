@@ -95,17 +95,17 @@ const SingleGridItem = ({ item }: { item: Product }) => {
   };
 
   return (
-    <div className="group">
-      <div className="relative overflow-hidden flex items-center justify-center rounded-lg bg-white shadow-1 min-h-[180px] sm:min-h-[270px] mb-2 sm:mb-4">
+    <div className="group h-full">
+      <div className="relative overflow-hidden flex items-center justify-center rounded-lg bg-white shadow-1 min-h-[150px] sm:min-h-[210px] md:min-h-[240px] lg:min-h-[270px] mb-2 sm:mb-3 px-2 pt-2">
         <Image
           src={productImage}
           alt={item.title || "product"}
           width={250}
           height={250}
-          className="w-32 sm:w-[250px] h-auto"
+          className="w-24 sm:w-32 md:w-40 lg:w-[220px] h-auto object-contain"
         />
 
-        <div className="absolute left-0 bottom-0 translate-y-full w-full flex items-center justify-center gap-2.5 pb-5 ease-linear duration-200 group-hover:translate-y-0">
+        <div className="absolute left-0 bottom-0 translate-y-full w-full flex items-center justify-center gap-1.5 sm:gap-2.5 pb-3 sm:pb-4 ease-linear duration-200 group-hover:translate-y-0">
           <button
             onClick={() => {
               openModal();
@@ -113,7 +113,7 @@ const SingleGridItem = ({ item }: { item: Product }) => {
             }}
             id="newOne"
             aria-label="button for quick view"
-            className="flex items-center justify-center w-9 h-9 rounded-[5px] shadow-1 ease-out duration-200 text-dark bg-white hover:text-blue"
+            className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-[5px] shadow-1 ease-out duration-200 text-dark bg-white hover:text-blue"
           >
             <svg
               className="fill-current"
@@ -140,7 +140,7 @@ const SingleGridItem = ({ item }: { item: Product }) => {
 
           <button
             onClick={() => handleAddToCart()}
-            className="inline-flex font-medium text-custom-sm py-[7px] px-5 rounded-[5px] bg-blue text-white ease-out duration-200 hover:bg-blue-dark"
+            className="inline-flex font-medium text-[10px] sm:text-custom-sm py-[6px] px-2.5 sm:py-[7px] sm:px-5 rounded-[5px] bg-blue text-white ease-out duration-200 hover:bg-blue-dark"
           >
             Add to cart
           </button>
@@ -149,7 +149,7 @@ const SingleGridItem = ({ item }: { item: Product }) => {
             onClick={() => handleItemToWishList()}
             aria-label="button for favorite select"
             id="favOne"
-            className={`flex items-center justify-center w-9 h-9 rounded-[5px] shadow-1 ease-out duration-200 bg-white ${
+            className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-[5px] shadow-1 ease-out duration-200 bg-white ${
               isInWishlist
                 ? "text-[#DC3545] hover:text-[#b02a37]"
                 : "text-dark hover:text-blue"
@@ -225,16 +225,16 @@ const SingleGridItem = ({ item }: { item: Product }) => {
 
       <h3
         onClick={handleProductDetails}
-        className="font-medium text-dark text-xs sm:text-base ease-out duration-200 hover:text-blue mb-1 sm:mb-1.5 line-clamp-2"
+        className="font-medium text-dark text-[11px] sm:text-sm md:text-base ease-out duration-200 hover:text-blue mb-1 sm:mb-1.5 line-clamp-2 leading-5"
       >
         <Link href={`/shop-details?id=${item.id}`}> {item.title} </Link>
       </h3>
 
-      <span className="flex items-center gap-1 sm:gap-2 font-medium text-sm sm:text-lg">
+      <span className="flex items-center gap-1 sm:gap-2 font-medium text-xs sm:text-sm md:text-lg">
         <span className="text-dark">
           ${typeof discountedPrice === "number" ? discountedPrice.toFixed(2) : discountedPrice}
         </span>
-        <span className="text-dark-4 line-through">${item.price}</span>
+        <span className="text-dark-4 line-through text-[10px] sm:text-xs">${item.price}</span>
       </span>
     </div>
   );
