@@ -1,7 +1,10 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import Image from "next/image";
 
 const Newsletter = () => {
+  const [submitted, setSubmitted] = useState(false);
+
   return (
     <section className="overflow-hidden">
       <div className="max-w-[1170px] mx-auto px-4 sm:px-8 xl:px-0">
@@ -28,7 +31,12 @@ const Newsletter = () => {
             </div>
 
             <div className="max-w-[477px] w-full">
-              <form>
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  setSubmitted(true);
+                }}
+              >
                 <div className="flex flex-col sm:flex-row gap-4">
                   <input
                     type="email"
@@ -44,6 +52,11 @@ const Newsletter = () => {
                     Subscribe
                   </button>
                 </div>
+                {submitted && (
+                  <p className="mt-2 text-sm text-white">
+                    Thanks for subscribing.
+                  </p>
+                )}
               </form>
             </div>
           </div>

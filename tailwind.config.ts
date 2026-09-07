@@ -104,6 +104,25 @@ const config: Config = {
       ...defaultTheme.screens,
     },
     extend: {
+      keyframes: {
+        "hero-text-in": {
+          "0%": { opacity: "0", transform: "translateY(36px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "hero-product-in": {
+          "0%": { opacity: "0", transform: "translateX(52px) scale(0.88)" },
+          "100%": { opacity: "1", transform: "translateX(0) scale(1)" },
+        },
+        "hero-product-float": {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-8px)" },
+        },
+      },
+      animation: {
+        "hero-text-in": "hero-text-in 950ms ease-out both",
+        "hero-product-in": "hero-product-in 1100ms cubic-bezier(0.22, 1, 0.36, 1) both",
+        "hero-product-float": "hero-product-float 4.5s ease-in-out 1100ms infinite",
+      },
       fontSize: {
         "2xs": ["10px", "17px"],
         "heading-1": ["60px", "72px"],

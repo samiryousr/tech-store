@@ -6,6 +6,7 @@ import { removeItemFromWishlist } from "@/redux/features/wishlist-slice";
 import { addItemToCart } from "@/redux/features/cart-slice";
 
 import Image from "next/image";
+import Link from "next/link";
 
 const SingleItem = ({ item }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -69,7 +70,7 @@ const SingleItem = ({ item }) => {
 
             <div>
               <h3 className="text-dark ease-out duration-200 hover:text-blue">
-                <a href="#"> {item.title} </a>
+                <Link href={`/shop-details?id=${item.id}`}> {item.title} </Link>
               </h3>
             </div>
           </div>
@@ -105,7 +106,9 @@ const SingleItem = ({ item }) => {
             />
           </svg>
 
-          <span className="text-red"> Out of Stock </span>
+          <span className={item.stock === 0 ? "text-red" : "text-green"}>
+            {item.stock === 0 ? "Out of Stock" : `${item.stock ?? ""} In Stock`}
+          </span>
         </div>
       </div>
 

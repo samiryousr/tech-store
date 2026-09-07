@@ -53,3 +53,39 @@ export type ProductsResponse = {
   skip: number;
   limit: number;
 };
+
+export type ProductLike = {
+  id: number;
+  title: string;
+  price: number;
+  discountPercentage?: number;
+  discountedPrice?: number;
+  thumbnail?: string;
+  images?: string[];
+  imgs?: {
+    thumbnails: string[];
+    previews: string[];
+  };
+  reviews?: ProductReview[] | number;
+  stock?: number;
+  availabilityStatus?: string;
+};
+
+export const getProductDiscountedPrice = (product: ProductLike): number =>
+  product.discountedPrice ??
+  Number(
+    (
+      product.price -
+      (product.price * (product.discountPercentage ?? 0)) / 100
+    ).toFixed(2)
+  );
+
+export const getProductImages = (product: ProductLike): string[] => {
+  if (product.images?.length) return product.images;
+  if (product.imgs?.previews?.length) return product.imgs.previews;
+  if (product.thumbnail) return [product.thumbnail];
+  return [];
+};
+
+export const getProductReviewCount = (product: ProductLike): number =>
+  Array.isArray(product.reviews) ? product.reviews.length : product.reviews ?? 0;

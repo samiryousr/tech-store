@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Breadcrumb from "../Common/Breadcrumb";
 import Image from "next/image";
 import Newsletter from "../Common/Newsletter";
@@ -14,6 +14,11 @@ import {
 } from "@/redux/features/wishlist-slice";
 import { updateproductDetails } from "@/redux/features/product-details";
 import { Product } from "@/types/product";
+import { getShopData } from "@/components/Shop/shopData";
+import {
+  getProductDiscountedPrice,
+  getProductReviewCount,
+} from "@/types/product";
 
 const ShopDetails = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -90,20 +95,50 @@ const ShopDetails = () => {
   const wishlistItems = useAppSelector((state) => state.wishlistReducer.items);
 
   const [product, setProduct] = useState<Product>(productFromStorage);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
   const isInWishlist = wishlistItems.some((w) => w.id === product?.id);
 
   useEffect(() => {
-    try {
-      const alreadyExist =
-        typeof window !== "undefined"
-          ? localStorage.getItem("productDetails")
-          : null;
-      if (alreadyExist) {
-        setProduct(JSON.parse(alreadyExist));
-      } else if (productFromStorage?.title) {
-        setProduct(productFromStorage);
+    let isMounted = true;
+    const productId = Number(
+      new URLSearchParams(window.location.search).get("id")
+    );
+
+    if (productId) {
+      setIsLoading(true);
+      getShopData()
+        .then(({ products }) => {
+          const selectedProduct = products.find((item) => item.id === productId);
+          if (!isMounted) return;
+          if (selectedProduct) {
+            setProduct(selectedProduct);
+            setLoadError("");
+          } else {
+            setLoadError("Product not found.");
+          }
+        })
+        .catch(() => {
+          if (isMounted) setLoadError("Unable to load this product.");
+        })
+        .finally(() => {
+          if (isMounted) setIsLoading(false);
+        });
+    } else {
+      try {
+        const savedProduct = localStorage.getItem("productDetails");
+        if (savedProduct) setProduct(JSON.parse(savedProduct));
+        else if (productFromStorage?.title) setProduct(productFromStorage);
+      } catch {
+        setLoadError("Unable to load this product.");
+      } finally {
+        setIsLoading(false);
       }
-    } catch (e) {}
+    }
+
+    return () => {
+      isMounted = false;
+    };
   }, [productFromStorage]);
 
   useEffect(() => {
@@ -135,16 +170,8 @@ const ShopDetails = () => {
       : productImage
       ? [productImage]
       : [];
-  const discountedPrice =
-    product?.discountedPrice ??
-    (product?.discountPercentage && product?.price
-      ? Number(
-          (
-            product.price -
-            (product.price * product.discountPercentage) / 100
-          ).toFixed(2)
-        )
-      : product?.price ?? 0);
+  const discountedPrice = getProductDiscountedPrice(product);
+  const reviewCount = getProductReviewCount(product);
   const activePreviewImage =
     previews[previewImg] ||
     thumbnails[previewImg] ||
@@ -196,8 +223,12 @@ const ShopDetails = () => {
     <>
       <Breadcrumb title={"Shop Details"} pages={["shop details"]} />
 
-      {product.title === "" ? (
-        "Please add product"
+      {isLoading ? (
+        <p className="py-20 text-center">Loading product...</p>
+      ) : loadError ? (
+        <p className="py-20 text-center text-red">{loadError}</p>
+      ) : product.title === "" ? (
+        <p className="py-20 text-center">Please select a product.</p>
       ) : (
         <>
           <section className="overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28">
@@ -271,7 +302,7 @@ const ShopDetails = () => {
                     </h2>
 
                     <div className="inline-flex font-medium text-custom-sm text-white bg-blue rounded py-0.5 px-2.5">
-                      30% OFF
+                      {product.discountPercentage}% OFF
                     </div>
                   </div>
 
@@ -385,7 +416,7 @@ const ShopDetails = () => {
                         </svg>
                       </div>
 
-                      <span> (5 customer reviews) </span>
+                      <span> ({reviewCount} customer reviews) </span>
                     </div>
 
                     <div className="flex items-center gap-1.5">
@@ -413,7 +444,9 @@ const ShopDetails = () => {
                         </defs>
                       </svg>
 
-                      <span className="text-green"> In Stock </span>
+                      <span className={product.stock > 0 ? "text-green" : "text-red"}>
+                        {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                      </span>
                     </div>
                   </div>
 
@@ -471,7 +504,7 @@ const ShopDetails = () => {
                           fill="#3C50E0"
                         />
                       </svg>
-                      Sales 30% Off Use Code: PROMO30
+                      {product.shippingInformation || "Fast delivery available"}
                     </li>
                   </ul>
 

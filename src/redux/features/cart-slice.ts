@@ -1,11 +1,16 @@
 import { createSelector, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../store";
+import {
+  getProductDiscountedPrice,
+  getProductImages,
+  ProductLike,
+} from "@/types/product";
 
 type InitialState = {
   items: CartItem[];
 };
 
-type CartItem = {
+export type CartItem = {
   id: number;
   title: string;
   price: number;
@@ -17,6 +22,8 @@ type CartItem = {
   };
 };
 
+export type CartProductPayload = ProductLike & { quantity?: number };
+
 const initialState: InitialState = {
   items: [],
 };
@@ -25,30 +32,10 @@ export const cart = createSlice({
   name: "cart",
   initialState,
   reducers: {
-    addItemToCart: (state, action: PayloadAction<any>) => {
+    addItemToCart: (state, action: PayloadAction<CartProductPayload>) => {
       const item = action.payload;
-      const productImage = item.thumbnail || (item.images && item.images[0]) || "";
-      const thumbnails =
-        item.imgs?.thumbnails?.length
-          ? item.imgs.thumbnails
-          : item.images?.length
-          ? item.images
-          : productImage
-          ? [productImage]
-          : [];
-      const previews =
-        item.imgs?.previews?.length
-          ? item.imgs.previews
-          : item.images?.length
-          ? item.images
-          : productImage
-          ? [productImage]
-          : [];
-      const discountedPrice =
-        item.discountedPrice ??
-        (item.discountPercentage && item.price
-          ? Number((item.price - (item.price * item.discountPercentage) / 100).toFixed(2))
-          : item.price ?? 0);
+      const images = getProductImages(item);
+      const discountedPrice = getProductDiscountedPrice(item);
 
       const existingItem = state.items.find((i) => i.id === item.id);
 
@@ -61,7 +48,7 @@ export const cart = createSlice({
           price: item.price,
           quantity: item.quantity || 1,
           discountedPrice,
-          imgs: { thumbnails, previews },
+          imgs: { thumbnails: images, previews: images },
         });
       }
     },
@@ -84,6 +71,9 @@ export const cart = createSlice({
     removeAllItemsFromCart: (state) => {
       state.items = [];
     },
+    setCartItems: (state, action: PayloadAction<CartItem[]>) => {
+      state.items = action.payload;
+    },
   },
 });
 
@@ -100,5 +90,6 @@ export const {
   removeItemFromCart,
   updateCartItemQuantity,
   removeAllItemsFromCart,
+  setCartItems,
 } = cart.actions;
 export default cart.reducer;

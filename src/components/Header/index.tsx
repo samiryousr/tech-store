@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import CustomSelect from "./CustomSelect";
 import { menuData } from "./menuData";
 import Dropdown from "./Dropdown";
@@ -15,6 +16,7 @@ const Header = () => {
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [stickyMenu, setStickyMenu] = useState(false);
   const { openCartModal } = useCartModalContext();
+  const router = useRouter();
 
   const product = useAppSelector((state) => state.cartReducer.items);
   const totalPrice = useSelector(selectTotalPrice);
@@ -34,17 +36,30 @@ const Header = () => {
 
   useEffect(() => {
     window.addEventListener("scroll", handleStickyMenu);
-  });
+    return () => window.removeEventListener("scroll", handleStickyMenu);
+  }, []);
+
+  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const query = searchQuery.trim();
+    router.push(
+      query
+        ? `/shop-without-sidebar?search=${encodeURIComponent(query)}`
+        : "/shop-without-sidebar"
+    );
+  };
+
+  const handleCategoryChange = (option: { value: string }) => {
+    const query = option.value === "0" ? "" : `?category=${option.value}`;
+    router.push(`/shop-without-sidebar${query}`);
+  };
 
   const options = [
     { label: "All Categories", value: "0" },
-    { label: "Desktop", value: "1" },
-    { label: "Laptop", value: "2" },
-    { label: "Monitor", value: "3" },
-    { label: "Phone", value: "4" },
-    { label: "Watch", value: "5" },
-    { label: "Mouse", value: "6" },
-    { label: "Tablet", value: "7" },
+    { label: "Smartphones", value: "smartphones" },
+    { label: "Laptops", value: "laptops" },
+    { label: "Tablets", value: "tablets" },
+    { label: "Mobile Accessories", value: "mobile-accessories" },
   ];
 
   return (
@@ -72,9 +87,9 @@ const Header = () => {
             </Link>
 
             <div className="max-w-[475px] w-full">
-              <form>
+              <form onSubmit={handleSearch}>
                 <div className="flex items-center">
-                  <CustomSelect options={options} />
+                  <CustomSelect options={options} onChange={handleCategoryChange} />
 
                   <div className="relative max-w-[333px] sm:min-w-[333px] w-full">
                     {/* <!-- divider --> */}
@@ -335,8 +350,8 @@ const Header = () => {
             <div className="hidden xl:block">
               <ul className="flex items-center gap-5.5">
                 <li className="py-4">
-                  <a
-                    href="#"
+                  <Link
+                    href="/shop-details"
                     className="flex items-center gap-1.5 font-medium text-custom-sm text-dark hover:text-blue"
                   >
                     <svg
@@ -357,7 +372,7 @@ const Header = () => {
                       />
                     </svg>
                     Recently Viewed
-                  </a>
+                  </Link>
                 </li>
 
                 <li className="py-4">

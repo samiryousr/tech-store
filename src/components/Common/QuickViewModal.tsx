@@ -13,6 +13,7 @@ import Image from "next/image";
 import { usePreviewSlider } from "@/app/context/PreviewSliderContext";
 import { resetQuickView } from "@/redux/features/quickView-slice";
 import { updateproductDetails } from "@/redux/features/product-details";
+import { getProductReviewCount } from "@/types/product";
 
 const QuickViewModal = () => {
   const { isModalOpen, closeModal } = useModalContext();
@@ -62,6 +63,7 @@ const QuickViewModal = () => {
           ).toFixed(2)
         )
       : product?.price ?? 0);
+  const reviewCount = product ? getProductReviewCount(product) : 0;
 
   const activeImage =
     previews[activePreview] ||
@@ -342,8 +344,8 @@ const QuickViewModal = () => {
                   </div>
 
                   <span>
-                    <span className="font-medium text-dark"> 4.7 Rating </span>
-                    <span className="text-dark-2"> (5 reviews) </span>
+                    <span className="font-medium text-dark"> {product?.rating?.toFixed(1) ?? "0.0"} Rating </span>
+                    <span className="text-dark-2"> ({reviewCount} reviews) </span>
                   </span>
                 </div>
 
@@ -372,14 +374,13 @@ const QuickViewModal = () => {
                     </defs>
                   </svg>
 
-                  <span className="font-medium text-dark"> In Stock </span>
+                  <span className={product?.stock ? "font-medium text-green" : "font-medium text-red"}>
+                    {product?.stock ? `${product.stock} In Stock` : "Out of Stock"}
+                  </span>
                 </div>
               </div>
 
-              <p>
-                Lorem Ipsum is simply dummy text of the printing and typesetting
-                industry. Lorem Ipsum has.
-              </p>
+              <p>{product?.description}</p>
 
               <div className="flex flex-wrap justify-between gap-5 mt-6 mb-7.5">
                 <div>

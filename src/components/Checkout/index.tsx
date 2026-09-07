@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import Breadcrumb from "../Common/Breadcrumb";
 import Login from "./Login";
 import Shipping from "./Shipping";
@@ -7,14 +7,28 @@ import ShippingMethod from "./ShippingMethod";
 import PaymentMethod from "./PaymentMethod";
 import Coupon from "./Coupon";
 import Billing from "./Billing";
+import Link from "next/link";
+import { useAppSelector } from "@/redux/store";
+import { selectTotalPrice } from "@/redux/features/cart-slice";
+import { useSelector } from "react-redux";
 
 const Checkout = () => {
+  const cartItems = useAppSelector((state) => state.cartReducer.items);
+  const totalPrice = useSelector(selectTotalPrice);
+  const [submitted, setSubmitted] = useState(false);
+  const shippingFee = cartItems.length ? 15 : 0;
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (cartItems.length) setSubmitted(true);
+  };
+
   return (
     <>
       <Breadcrumb title={"Checkout"} pages={["checkout"]} />
       <section className="overflow-hidden py-20 bg-gray-2">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
-          <form>
+          <form onSubmit={handleSubmit}>
             <div className="flex flex-col lg:flex-row gap-7.5 xl:gap-11">
               {/* <!-- checkout left --> */}
               <div className="lg:max-w-[670px] w-full">
@@ -68,44 +82,24 @@ const Checkout = () => {
                       </div>
                     </div>
 
-                    {/* <!-- product item --> */}
-                    <div className="flex items-center justify-between py-5 border-b border-gray-3">
-                      <div>
-                        <p className="text-dark">iPhone 14 Plus , 6/128GB</p>
-                      </div>
-                      <div>
-                        <p className="text-dark text-right">$899.00</p>
-                      </div>
-                    </div>
+                    {cartItems.length ? (
+                      cartItems.map((item) => (
+                        <div key={item.id} className="flex items-center justify-between py-5 border-b border-gray-3">
+                          <div>
+                            <p className="text-dark">{item.title} x {item.quantity}</p>
+                          </div>
+                          <div>
+                            <p className="text-dark text-right">${(item.discountedPrice * item.quantity).toFixed(2)}</p>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="py-5 text-dark-4">Your cart is empty.</p>
+                    )}
 
-                    {/* <!-- product item --> */}
                     <div className="flex items-center justify-between py-5 border-b border-gray-3">
-                      <div>
-                        <p className="text-dark">Asus RT Dual Band Router</p>
-                      </div>
-                      <div>
-                        <p className="text-dark text-right">$129.00</p>
-                      </div>
-                    </div>
-
-                    {/* <!-- product item --> */}
-                    <div className="flex items-center justify-between py-5 border-b border-gray-3">
-                      <div>
-                        <p className="text-dark">Havit HV-G69 USB Gamepad</p>
-                      </div>
-                      <div>
-                        <p className="text-dark text-right">$29.00</p>
-                      </div>
-                    </div>
-
-                    {/* <!-- product item --> */}
-                    <div className="flex items-center justify-between py-5 border-b border-gray-3">
-                      <div>
-                        <p className="text-dark">Shipping Fee</p>
-                      </div>
-                      <div>
-                        <p className="text-dark text-right">$15.00</p>
-                      </div>
+                      <p className="text-dark">Shipping Fee</p>
+                      <p className="text-dark text-right">${shippingFee.toFixed(2)}</p>
                     </div>
 
                     {/* <!-- total --> */}
@@ -115,7 +109,7 @@ const Checkout = () => {
                       </div>
                       <div>
                         <p className="font-medium text-lg text-dark text-right">
-                          $1072.00
+                          ${(totalPrice + shippingFee).toFixed(2)}
                         </p>
                       </div>
                     </div>
@@ -132,12 +126,21 @@ const Checkout = () => {
                 <PaymentMethod />
 
                 {/* <!-- checkout button --> */}
+                {submitted && (
+                  <p className="mt-5 text-center text-green">Order submitted successfully.</p>
+                )}
                 <button
                   type="submit"
+                  disabled={!cartItems.length}
                   className="w-full flex justify-center font-medium text-white bg-blue py-3 px-6 rounded-md ease-out duration-200 hover:bg-blue-dark mt-7.5"
                 >
-                  Process to Checkout
+                  Process Order
                 </button>
+                {!cartItems.length && (
+                  <Link href="/shop-with-sidebar" className="block mt-3 text-center text-blue">
+                    Continue shopping
+                  </Link>
+                )}
               </div>
             </div>
           </form>

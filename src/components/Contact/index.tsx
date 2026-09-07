@@ -1,7 +1,9 @@
-import React from "react";
+"use client";
+import React, { useState } from "react";
 import Breadcrumb from "../Common/Breadcrumb";
 
 const Contact = () => {
+  const [submitted, setSubmitted] = useState(false);
   return (
     <>
       <Breadcrumb title={"Contact"} pages={["contact"]} />
@@ -87,7 +89,12 @@ const Contact = () => {
             </div>
 
             <div className="xl:max-w-[770px] w-full bg-white rounded-xl shadow-1 p-4 sm:p-7.5 xl:p-10">
-              <form>
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  setSubmitted(true);
+                }}
+              >
                 <div className="flex flex-col lg:flex-row gap-5 sm:gap-8 mb-5">
                   <div className="w-full">
                     <label htmlFor="firstName" className="block mb-2.5">
@@ -168,6 +175,9 @@ const Contact = () => {
                 >
                   Send Message
                 </button>
+                {submitted && (
+                  <p className="mt-4 text-green">Message sent successfully.</p>
+                )}
               </form>
             </div>
           </div>

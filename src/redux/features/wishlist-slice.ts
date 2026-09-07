@@ -1,7 +1,18 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import {
+  getProductDiscountedPrice,
+  getProductImages,
+  ProductLike,
+} from "@/types/product";
 
 type InitialState = {
   items: WishListItem[];
+};
+
+export type WishlistItem = WishListItem;
+export type WishlistProductPayload = ProductLike & {
+  quantity?: number;
+  status?: string;
 };
 
 type WishListItem = {
@@ -11,6 +22,8 @@ type WishListItem = {
   discountedPrice: number;
   quantity: number;
   status?: string;
+  stock?: number;
+  availabilityStatus?: string;
   imgs?: {
     thumbnails: string[];
     previews: string[];
@@ -25,30 +38,10 @@ export const wishlist = createSlice({
   name: "wishlist",
   initialState,
   reducers: {
-    addItemToWishlist: (state, action: PayloadAction<any>) => {
+    addItemToWishlist: (state, action: PayloadAction<WishlistProductPayload>) => {
       const item = action.payload;
-      const productImage = item.thumbnail || (item.images && item.images[0]) || "";
-      const thumbnails =
-        item.imgs?.thumbnails?.length
-          ? item.imgs.thumbnails
-          : item.images?.length
-          ? item.images
-          : productImage
-          ? [productImage]
-          : [];
-      const previews =
-        item.imgs?.previews?.length
-          ? item.imgs.previews
-          : item.images?.length
-          ? item.images
-          : productImage
-          ? [productImage]
-          : [];
-      const discountedPrice =
-        item.discountedPrice ??
-        (item.discountPercentage && item.price
-          ? Number((item.price - (item.price * item.discountPercentage) / 100).toFixed(2))
-          : item.price ?? 0);
+      const images = getProductImages(item);
+      const discountedPrice = getProductDiscountedPrice(item);
 
       const existingItem = state.items.find((i) => i.id === item.id);
 
@@ -60,9 +53,11 @@ export const wishlist = createSlice({
           title: item.title,
           price: item.price,
           quantity: item.quantity || 1,
-          imgs: { thumbnails, previews },
+          imgs: { thumbnails: images, previews: images },
           discountedPrice,
           status: item.status || "available",
+          stock: item.stock,
+          availabilityStatus: item.availabilityStatus,
         });
       }
     },
@@ -74,6 +69,9 @@ export const wishlist = createSlice({
     removeAllItemsFromWishlist: (state) => {
       state.items = [];
     },
+    setWishlistItems: (state, action: PayloadAction<WishListItem[]>) => {
+      state.items = action.payload;
+    },
   },
 });
 
@@ -81,5 +79,6 @@ export const {
   addItemToWishlist,
   removeItemFromWishlist,
   removeAllItemsFromWishlist,
+  setWishlistItems,
 } = wishlist.actions;
 export default wishlist.reducer;

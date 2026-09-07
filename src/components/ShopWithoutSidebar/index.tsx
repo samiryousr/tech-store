@@ -5,7 +5,7 @@ import SingleGridItem from "../Shop/SingleGridItem";
 import SingleListItem from "../Shop/SingleListItem";
 import CustomSelect, { Option } from "../ShopWithSidebar/CustomSelect";
 import { getShopData } from "../Shop/shopData";
-import { Product } from "@/types/product";
+import { getProductDiscountedPrice, Product } from "@/types/product";
 
 const sortOptions: Option[] = [
   { label: "Latest Products", value: "latest" },
@@ -22,31 +22,61 @@ const ShopWithoutSidebar = () => {
   const [shopData, setShopData] = useState<Product[]>([]);
   const [selectedSort, setSelectedSort] = useState<Option>(sortOptions[0]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   useEffect(() => {
-    getShopData().then((data) => setShopData(data.products || []));
+    const params = new URLSearchParams(window.location.search);
+    setSearchQuery(params.get("search") ?? "");
+    setSelectedCategory(params.get("category") ?? "");
+    getShopData()
+      .then((data) => {
+        setShopData(data.products || []);
+        if (!data.products.length) setLoadError("Unable to load products.");
+      })
+      .catch(() => setLoadError("Unable to load products."))
+      .finally(() => setLoading(false));
   }, []);
 
   const sortedProducts = useMemo(() => {
-    const list = [...shopData];
+    const query = searchQuery.trim().toLowerCase();
+    const list = shopData.filter((product) => {
+      const matchesCategory =
+        !selectedCategory ||
+        (selectedCategory === "watches"
+          ? product.category.endsWith("-watches")
+          : selectedCategory === "audio"
+          ? product.category === "mobile-accessories" &&
+            /headphone|earbud|airpod|speaker|audio/i.test(product.title)
+          : product.category === selectedCategory);
+      const matchesSearch = !query ||
+        `${product.title} ${product.description} ${product.category} ${(product.tags ?? []).join(" ")}`
+          .toLowerCase()
+          .includes(query);
+      return matchesCategory && matchesSearch;
+    });
     switch (selectedSort.value) {
       case "price_asc":
-        return list.sort((a, b) => (a.discountedPrice || a.price) - (b.discountedPrice || b.price));
+        return list.sort((a, b) => getProductDiscountedPrice(a) - getProductDiscountedPrice(b));
       case "price_desc":
-        return list.sort((a, b) => (b.discountedPrice || b.price) - (a.discountedPrice || a.price));
+        return list.sort((a, b) => getProductDiscountedPrice(b) - getProductDiscountedPrice(a));
       case "rating":
         return list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
       case "discount":
         return list.sort((a, b) => {
-          const discA = a.discountedPrice ? (a.price - a.discountedPrice) / a.price : 0;
-          const discB = b.discountedPrice ? (b.price - b.discountedPrice) / b.price : 0;
-          return discB - discA;
+          return b.discountPercentage - a.discountPercentage;
         });
       case "latest":
       default:
         return list.sort((a, b) => (b.id || 0) - (a.id || 0));
     }
-  }, [shopData, selectedSort]);
+  }, [shopData, selectedSort, searchQuery, selectedCategory]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedSort, searchQuery, selectedCategory]);
 
   const totalPages = Math.ceil(sortedProducts.length / ITEMS_PER_PAGE) || 1;
   const validPage = Math.min(currentPage, totalPages);
@@ -182,11 +212,19 @@ const ShopWithoutSidebar = () => {
               </div>
 
               {/* <!-- Products Grid/List Tab Content Start --> */}
-              {paginatedProducts.length > 0 ? (
+              {loading ? (
+                <div className="bg-white rounded-lg shadow-1 p-12 text-center">
+                  Loading products...
+                </div>
+              ) : loadError ? (
+                <div className="bg-white rounded-lg shadow-1 p-12 text-center text-red">
+                  {loadError}
+                </div>
+              ) : paginatedProducts.length > 0 ? (
                 <div
                   className={`${
                     productStyle === "grid"
-                      ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-7.5 gap-y-9"
+                      ? "grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-x-7.5 sm:gap-y-9"
                       : "flex flex-col gap-7.5"
                   }`}
                 >

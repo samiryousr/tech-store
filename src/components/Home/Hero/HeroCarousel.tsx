@@ -47,7 +47,7 @@ const HeroCarousal = () => {
 
     dispatch(updateproductDetails(productDetails));
     localStorage.setItem("productDetails", JSON.stringify(productDetails));
-    router.push("/shop-details");
+    router.push(`/shop-details?id=${headphoneProduct.id}`);
   };
 
   const productImage = headphoneProduct?.thumbnail ?? "/images/hero/hero-01.png";
@@ -87,9 +87,7 @@ const HeroCarousal = () => {
               </button>
             </h1>
 
-            <p>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Morbi at ipsum at risus euismod lobortis in
-            </p>
+            <p>{headphoneProduct?.description ?? "Premium wireless sound with active noise cancellation."}</p>
 
             <button
               onClick={openProduct}
@@ -99,7 +97,7 @@ const HeroCarousal = () => {
             </button>
           </div>
 
-          <div>
+          <div className="cursor-pointer" onClick={openProduct}>
             <Image
               src={productImage}
               alt={headphoneProduct?.title ?? "headphone"}
@@ -130,10 +128,7 @@ const HeroCarousal = () => {
               </button>
             </h1>
 
-            <p>
-              Lorem ipsum dolor sit, consectetur elit nunc suscipit non ipsum
-              nec suscipit.
-            </p>
+            <p>{headphoneProduct?.description ?? "Premium wireless sound with active noise cancellation."}</p>
 
             <button
               onClick={openProduct}
@@ -143,7 +138,7 @@ const HeroCarousal = () => {
             </button>
           </div>
 
-          <div>
+          <div className="cursor-pointer" onClick={openProduct}>
             <Image
               src={productImage}
               alt={headphoneProduct?.title ?? "headphone"}

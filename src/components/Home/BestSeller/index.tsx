@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import SingleGridItem from "@/components/Shop/SingleGridItem";
-import { getShopData } from "@/components/Shop/shopData";
+import { getDiverseProducts, getShopData } from "@/components/Shop/shopData";
 import { Product } from "@/types/product";
 
 const BestSeller = () => {
@@ -11,11 +11,10 @@ const BestSeller = () => {
 
   useEffect(() => {
     getShopData().then(({ products: apiProducts }) => {
-      setProducts(
-        [...apiProducts]
-          .sort((first, second) => second.rating - first.rating)
-          .slice(0, 6)
+      const bestRatedProducts = [...apiProducts].sort(
+        (first, second) => second.rating - first.rating
       );
+      setProducts(getDiverseProducts(bestRatedProducts, 6));
     });
   }, []);
 
@@ -40,7 +39,7 @@ const BestSeller = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7.5">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-7.5">
           {/* <!-- Best Sellers item --> */}
           {products.map((item) => (
             <SingleGridItem item={item} key={item.id} />

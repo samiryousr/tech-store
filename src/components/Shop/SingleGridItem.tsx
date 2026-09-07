@@ -96,8 +96,14 @@ const SingleGridItem = ({ item }: { item: Product }) => {
 
   return (
     <div className="group">
-      <div className="relative overflow-hidden flex items-center justify-center rounded-lg bg-white shadow-1 min-h-[270px] mb-4">
-        <Image src={productImage} alt={item.title || "product"} width={250} height={250} />
+      <div className="relative overflow-hidden flex items-center justify-center rounded-lg bg-white shadow-1 min-h-[180px] sm:min-h-[270px] mb-2 sm:mb-4">
+        <Image
+          src={productImage}
+          alt={item.title || "product"}
+          width={250}
+          height={250}
+          className="w-32 sm:w-[250px] h-auto"
+        />
 
         <div className="absolute left-0 bottom-0 translate-y-full w-full flex items-center justify-center gap-2.5 pb-5 ease-linear duration-200 group-hover:translate-y-0">
           <button
@@ -175,51 +181,56 @@ const SingleGridItem = ({ item }: { item: Product }) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-2.5 mb-2">
+      <div className="flex items-center gap-1 sm:gap-2.5 mb-1 sm:mb-2">
         <div className="flex items-center gap-1">
           <Image
             src="/images/icons/icon-star.svg"
             alt="star icon"
             width={15}
             height={15}
+            className="w-3 sm:w-[15px] h-auto"
           />
           <Image
             src="/images/icons/icon-star.svg"
             alt="star icon"
             width={15}
             height={15}
+            className="w-3 sm:w-[15px] h-auto"
           />
           <Image
             src="/images/icons/icon-star.svg"
             alt="star icon"
             width={15}
             height={15}
+            className="w-3 sm:w-[15px] h-auto"
           />
           <Image
             src="/images/icons/icon-star.svg"
             alt="star icon"
             width={15}
             height={15}
+            className="w-3 sm:w-[15px] h-auto"
           />
           <Image
             src="/images/icons/icon-star.svg"
             alt="star icon"
             width={15}
             height={15}
+            className="w-3 sm:w-[15px] h-auto"
           />
         </div>
 
-        <p className="text-custom-sm">({reviewsCount})</p>
+        <p className="text-[10px] sm:text-custom-sm">({reviewsCount})</p>
       </div>
 
       <h3
         onClick={handleProductDetails}
-        className="font-medium text-dark ease-out duration-200 hover:text-blue mb-1.5"
+        className="font-medium text-dark text-xs sm:text-base ease-out duration-200 hover:text-blue mb-1 sm:mb-1.5 line-clamp-2"
       >
-        <Link href="/shop-details"> {item.title} </Link>
+        <Link href={`/shop-details?id=${item.id}`}> {item.title} </Link>
       </h3>
 
-      <span className="flex items-center gap-2 font-medium text-lg">
+      <span className="flex items-center gap-1 sm:gap-2 font-medium text-sm sm:text-lg">
         <span className="text-dark">
           ${typeof discountedPrice === "number" ? discountedPrice.toFixed(2) : discountedPrice}
         </span>
