@@ -9,7 +9,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 
-const SingleItem = ({ item }) => {
+const SingleItem = ({ item, isMobile }: { item: any; isMobile?: boolean }) => {
   const [quantity, setQuantity] = useState(item.quantity);
 
   const dispatch = useDispatch<AppDispatch>();
@@ -39,39 +39,123 @@ const SingleItem = ({ item }) => {
     (item.images && item.images[0]) ||
     "/images/products/product-01.png";
 
-  return (
-    <div className="flex items-center border-t border-gray-3 py-5 px-7.5">
-      <div className="min-w-[400px]">
-        <div className="flex items-center justify-between gap-5">
-          <div className="w-full flex items-center gap-5.5">
-            <div className="flex items-center justify-center rounded-[5px] bg-gray-2 max-w-[80px] w-full h-17.5">
-              <Image width={200} height={200} src={itemImage} alt={item.title || "product"} />
-            </div>
+  if (isMobile) {
+    return (
+      <div className="p-4 sm:p-5 flex flex-col gap-3.5">
+        <div className="flex items-start gap-3">
+          <Link
+            href={`/shop-details?id=${item.id}`}
+            className="flex items-center justify-center rounded-xl bg-gray-2 dark:bg-slate-800/90 max-w-[72px] w-full h-[72px] p-2 border border-gray-3/80 dark:border-slate-700/60 shrink-0 transition-transform active:scale-95"
+          >
+            <Image
+              width={72}
+              height={72}
+              src={itemImage}
+              alt={item.title || "product"}
+              loading="lazy"
+              className="max-h-full w-auto object-contain"
+            />
+          </Link>
 
-            <div>
-              <h3 className="text-dark ease-out duration-200 hover:text-blue">
-                <Link href={`/shop-details?id=${item.id}`}> {item.title} </Link>
-              </h3>
-            </div>
+          <div className="flex-1 min-w-0 pr-1">
+            <h3 className="font-medium text-dark dark:text-white text-sm line-clamp-2 hover:text-blue dark:hover:text-blue-light transition-colors">
+              <Link href={`/shop-details?id=${item.id}`}>{item.title}</Link>
+            </h3>
+            <p className="text-xs text-dark-4 dark:text-slate-400 mt-1">
+              Unit: ${item.discountedPrice}
+            </p>
+          </div>
+
+          <button
+            onClick={() => handleRemoveFromCart()}
+            aria-label="Remove item"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-dark-4 dark:text-slate-400 hover:text-red hover:bg-red/10 transition-colors shrink-0"
+          >
+            <svg className="w-4 h-4 fill-current" viewBox="0 0 16 16">
+              <path fillRule="evenodd" clipRule="evenodd" d="M10 2H6a1 1 0 0 0-1 1v1H2.5a.5.5 0 0 0 0 1h.56l.78 8.58A2 2 0 0 0 5.83 15h4.34a2 2 0 0 0 1.99-1.42l.78-8.58h.56a.5.5 0 0 0 0-1H11V3a1 1 0 0 0-1-1zm-4 2V3h4v1H6zm1 3.5a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V8a.5.5 0 0 1 .5-.5zm3 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V8a.5.5 0 0 1 .5-.5z"/>
+            </svg>
+          </button>
+        </div>
+
+        <div className="flex items-center justify-between pt-2 border-t border-gray-2 dark:border-slate-800">
+          <div className="inline-flex items-center rounded-lg border border-gray-3 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
+            <button
+              onClick={() => handleDecreaseQuantity()}
+              disabled={quantity <= 1}
+              aria-label="Decrease quantity"
+              className="w-8 h-8 flex items-center justify-center text-dark dark:text-slate-200 hover:text-blue disabled:opacity-30 transition-colors text-sm font-bold"
+            >
+              −
+            </button>
+            <span className="w-8 text-center font-semibold text-xs text-dark dark:text-white border-x border-gray-3 dark:border-slate-700">
+              {quantity}
+            </span>
+            <button
+              onClick={() => handleIncreaseQuantity()}
+              aria-label="Increase quantity"
+              className="w-8 h-8 flex items-center justify-center text-dark dark:text-slate-200 hover:text-blue transition-colors text-sm font-bold"
+            >
+              +
+            </button>
+          </div>
+
+          <div className="text-right">
+            <span className="font-bold text-base text-dark dark:text-white">
+              ${(item.discountedPrice * quantity).toFixed(2)}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center py-5 px-6 sm:px-8 hover:bg-gray-1/40 dark:hover:bg-slate-800/20 transition-colors">
+      <div className="min-w-[420px] flex-1">
+        <div className="flex items-center gap-4 sm:gap-5">
+          <Link
+            href={`/shop-details?id=${item.id}`}
+            className="flex items-center justify-center rounded-xl bg-gray-2 dark:bg-slate-800/90 max-w-[84px] w-full h-20 p-2 border border-gray-3/80 dark:border-slate-700/60 shrink-0 transition-transform hover:scale-105"
+          >
+            <Image
+              width={100}
+              height={100}
+              src={itemImage}
+              alt={item.title || "product"}
+              loading="lazy"
+              className="max-h-full w-auto object-contain"
+            />
+          </Link>
+
+          <div>
+            <h3 className="font-medium text-dark dark:text-white text-sm sm:text-base ease-out duration-200 hover:text-blue dark:hover:text-blue-light line-clamp-2">
+              <Link href={`/shop-details?id=${item.id}`}> {item.title} </Link>
+            </h3>
+            <p className="text-xs text-dark-4 dark:text-slate-400 mt-1">
+              Unit: ${item.discountedPrice}
+            </p>
           </div>
         </div>
       </div>
 
-      <div className="min-w-[180px]">
-        <p className="text-dark">${item.discountedPrice}</p>
+      <div className="min-w-[160px]">
+        <p className="font-semibold text-dark dark:text-slate-200 text-sm sm:text-base">
+          ${item.discountedPrice}
+        </p>
       </div>
 
-      <div className="min-w-[275px]">
-        <div className="w-max flex items-center rounded-md border border-gray-3">
+      <div className="min-w-[220px]">
+        <div className="inline-flex items-center rounded-lg border border-gray-3 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm">
           <button
             onClick={() => handleDecreaseQuantity()}
+            disabled={quantity <= 1}
             aria-label="button for remove product"
-            className="flex items-center justify-center w-11.5 h-11.5 ease-out duration-200 hover:text-blue"
+            className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-dark dark:text-slate-200 hover:text-blue dark:hover:text-blue-light disabled:opacity-40 disabled:hover:text-current transition-colors"
           >
             <svg
               className="fill-current"
-              width="20"
-              height="20"
+              width="16"
+              height="16"
               viewBox="0 0 20 20"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -83,19 +167,19 @@ const SingleItem = ({ item }) => {
             </svg>
           </button>
 
-          <span className="flex items-center justify-center w-16 h-11.5 border-x border-gray-4">
+          <span className="flex items-center justify-center w-12 h-9 sm:h-10 font-semibold text-sm sm:text-base text-dark dark:text-white border-x border-gray-3 dark:border-slate-700">
             {quantity}
           </span>
 
           <button
             onClick={() => handleIncreaseQuantity()}
             aria-label="button for add product"
-            className="flex items-center justify-center w-11.5 h-11.5 ease-out duration-200 hover:text-blue"
+            className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 text-dark dark:text-slate-200 hover:text-blue dark:hover:text-blue-light transition-colors"
           >
             <svg
               className="fill-current"
-              width="20"
-              height="20"
+              width="16"
+              height="16"
               viewBox="0 0 20 20"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
@@ -113,20 +197,22 @@ const SingleItem = ({ item }) => {
         </div>
       </div>
 
-      <div className="min-w-[200px]">
-        <p className="text-dark">${item.discountedPrice * quantity}</p>
+      <div className="min-w-[160px]">
+        <p className="font-bold text-dark dark:text-white text-base sm:text-lg">
+          ${(item.discountedPrice * quantity).toFixed(2)}
+        </p>
       </div>
 
-      <div className="min-w-[50px] flex justify-end">
+      <div className="min-w-[60px] flex justify-end">
         <button
           onClick={() => handleRemoveFromCart()}
           aria-label="button for remove product from cart"
-          className="flex items-center justify-center rounded-lg max-w-[38px] w-full h-9.5 bg-gray-2 border border-gray-3 text-dark ease-out duration-200 hover:bg-red-light-6 hover:border-red-light-4 hover:text-red"
+          className="flex items-center justify-center rounded-xl w-9 h-9 sm:w-10 sm:h-10 bg-gray-2 dark:bg-slate-800 border border-gray-3 dark:border-slate-700 text-dark-4 dark:text-slate-400 ease-out duration-200 hover:bg-red/10 hover:border-red/40 hover:text-red transition-all"
         >
           <svg
             className="fill-current"
-            width="22"
-            height="22"
+            width="18"
+            height="18"
             viewBox="0 0 22 22"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
@@ -138,7 +224,7 @@ const SingleItem = ({ item }) => {
               fill=""
             />
             <path
-              d="M5.42208 7.74597C5.39683 7.36711 5.06923 7.08047 4.69038 7.10572C4.31152 7.13098 4.02487 7.45858 4.05013 7.83743L4.47496 14.2099C4.55333 15.3857 4.61663 16.3355 4.76511 17.0808C4.91947 17.8557 5.18203 18.5029 5.72432 19.0103C6.26662 19.5176 6.92987 19.7365 7.7133 19.839C8.46682 19.9376 9.41871 19.9376 10.5971 19.9375H11.4028C12.5812 19.9376 13.5332 19.9376 14.2867 19.839C15.0701 19.7365 15.7334 19.5176 16.2757 19.0103C16.818 18.5029 17.0805 17.8557 17.2349 17.0808C17.3834 16.3355 17.4467 15.3857 17.525 14.2099L17.9499 7.83743C17.9751 7.45858 17.6885 7.13098 17.3096 7.10572C16.9308 7.08047 16.6032 7.36711 16.5779 7.74597L16.1563 14.0702C16.0739 15.3057 16.0152 16.1654 15.8864 16.8122C15.7614 17.4396 15.5869 17.7717 15.3363 18.0062C15.0857 18.2406 14.7427 18.3926 14.1084 18.4756C13.4544 18.5612 12.5927 18.5625 11.3545 18.5625H10.6455C9.40727 18.5625 8.54559 18.5612 7.89164 18.4756C7.25731 18.3926 6.91433 18.2406 6.6637 18.0062C6.41307 17.7717 6.2386 17.4396 6.11361 16.8122C5.98476 16.1654 5.92607 15.3057 5.8437 14.0702L5.42208 7.74597Z"
+              d="M5.42208 7.74597C5.39683 7.36711 5.06923 7.08047 4.69038 7.10572C4.31152 7.13098 4.02487 7.45858 4.05013 7.83743L4.47496 14.2099C4.55333 15.3857 4.61663 16.3355 4.76511 17.0808C4.91947 17.8557 5.18203 18.5029 5.72432 19.0103C6.26662 19.5176 6.92987 19.7365 7.7133 19.839C8.46682 19.9376 9.41871 19.9376 10.5971 19.9375H11.4028C12.5812 19.9376 13.5332 19.9376 14.2867 19.839C15.0701 19.7365 15.7334 19.5176 16.2757 19.0103C16.818 18.5029 17.0805 17.8557 17.2349 17.0808C17.3834 16.3355 17.4467 15.3857 17.525 14.2099L17.9499 7.83743C17.9751 7.45858 17.6885 7.13098 17.3096 7.10572C16.9308 7.08047 16.6032 7.36711 16.5779 7.74597L16.1563 14.0702C16.0739 15.3057 16.0152 16.1654 15.8864 16.8122C15.7614 17.4396 15.5869 17.7717 15.3363 18.0062C15.0857 18.2406 14.7427 18.3926 14.1084 18.4756C13.4554 18.5612 12.5927 18.5625 11.3545 18.5625H10.6455C9.40727 18.5625 8.54559 18.5612 7.89164 18.4756C7.25731 18.3926 6.91433 18.2406 6.6637 18.0062C6.41307 17.7717 6.2386 17.4396 6.11361 16.8122C5.98476 16.1654 5.92607 15.3057 5.8437 14.0702L5.42208 7.74597Z"
               fill=""
             />
             <path

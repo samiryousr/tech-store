@@ -24,7 +24,7 @@ const BestSeller = () => {
         {/* <!-- section title --> */}
         <div className="mb-10 flex items-center justify-between">
           <div>
-            <span className="flex items-center gap-2.5 font-medium text-dark mb-1.5">
+            <span className="flex items-center gap-2.5 font-medium text-dark dark:text-slate-300 mb-1.5">
               <Image
                 src="/images/icons/icon-07.svg"
                 alt="icon"
@@ -33,7 +33,7 @@ const BestSeller = () => {
               />
               This Month
             </span>
-            <h2 className="font-semibold text-xl xl:text-heading-5 text-dark">
+            <h2 className="font-semibold text-xl xl:text-heading-5 text-dark dark:text-white">
               Best Sellers
             </h2>
           </div>
@@ -49,7 +49,7 @@ const BestSeller = () => {
         <div className="text-center mt-12.5">
           <Link
             href="/shop-without-sidebar"
-            className="inline-flex font-medium text-custom-sm py-3 px-7 sm:px-12.5 rounded-md border-gray-3 border bg-gray-1 text-dark ease-out duration-200 hover:bg-dark hover:text-white hover:border-transparent"
+            className="inline-flex font-medium text-custom-sm py-3 px-7 sm:px-12.5 rounded-md border-gray-3 dark:border-slate-700 border bg-gray-1 dark:bg-slate-800 text-dark dark:text-white ease-out duration-200 hover:bg-dark dark:hover:bg-blue hover:text-white hover:border-transparent"
           >
             View All
           </Link>

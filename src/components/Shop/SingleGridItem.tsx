@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Product } from "@/types/product";
 import { useModalContext } from "@/app/context/QuickViewModalContext";
 import { updateQuickView } from "@/redux/features/quickView-slice";
@@ -12,11 +12,32 @@ import { useDispatch } from "react-redux";
 import { AppDispatch, useAppSelector } from "@/redux/store";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import { updateproductDetails } from "@/redux/features/product-details";
 
 const SingleGridItem = ({ item }: { item: Product }) => {
   const { openModal } = useModalContext();
+  const router = useRouter();
+
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(el);
+        }
+      },
+      { rootMargin: "60px", threshold: 0.05 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   const dispatch = useDispatch<AppDispatch>();
   const wishlistItems = useAppSelector((state) => state.wishlistReducer.items);
@@ -94,26 +115,45 @@ const SingleGridItem = ({ item }: { item: Product }) => {
     );
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // If click was triggered on a button or inside a button, do not navigate
+    if ((e.target as HTMLElement).closest("button")) {
+      return;
+    }
+    handleProductDetails();
+    router.push(`/shop-details?id=${item.id}`);
+  };
+
   return (
-    <div className="group h-full">
-      <div className="relative overflow-hidden flex items-center justify-center rounded-lg bg-white shadow-1 min-h-[150px] sm:min-h-[210px] md:min-h-[240px] lg:min-h-[270px] mb-2 sm:mb-3 px-2 pt-2">
+    <div
+      ref={cardRef}
+      onClick={handleCardClick}
+      className={`group h-full cursor-pointer flex flex-col justify-between transition-all duration-700 ease-out ${
+        isVisible
+          ? "opacity-100 translate-y-0 scale-100"
+          : "opacity-0 translate-y-7 scale-[0.98] pointer-events-none"
+      } hover:-translate-y-1`}
+    >
+      <div className="relative overflow-hidden flex items-center justify-center rounded-xl bg-white dark:bg-[#131c2e] border border-gray-3/50 dark:border-slate-800/80 shadow-1 dark:shadow-[0_8px_20px_rgba(0,0,0,0.35)] min-h-[150px] sm:min-h-[210px] md:min-h-[240px] lg:min-h-[270px] mb-2 sm:mb-3 px-2 pt-2 transition-all duration-300 group-hover:shadow-md dark:group-hover:border-slate-700">
         <Image
           src={productImage}
           alt={item.title || "product"}
           width={250}
           height={250}
-          className="w-24 sm:w-32 md:w-40 lg:w-[220px] h-auto object-contain"
+          loading="lazy"
+          className="w-24 sm:w-32 md:w-40 lg:w-[220px] h-auto object-contain transition-transform duration-300 group-hover:scale-105"
         />
 
-        <div className="absolute left-0 bottom-0 translate-y-full w-full flex items-center justify-center gap-1.5 sm:gap-2.5 pb-3 sm:pb-4 ease-linear duration-200 group-hover:translate-y-0">
+        <div className="absolute left-0 bottom-0 translate-y-full w-full flex items-center justify-center gap-1.5 sm:gap-2.5 pb-3 sm:pb-4 ease-linear duration-200 group-hover:translate-y-0 z-10">
           <button
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation();
               openModal();
               handleQuickViewUpdate();
             }}
             id="newOne"
             aria-label="button for quick view"
-            className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-[5px] shadow-1 ease-out duration-200 text-dark bg-white hover:text-blue"
+            className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-[5px] shadow-1 ease-out duration-200 text-dark dark:text-slate-200 bg-white dark:bg-slate-800 hover:text-blue dark:hover:text-blue-light border border-transparent dark:border-slate-700"
           >
             <svg
               className="fill-current"
@@ -139,20 +179,26 @@ const SingleGridItem = ({ item }: { item: Product }) => {
           </button>
 
           <button
-            onClick={() => handleAddToCart()}
-            className="inline-flex font-medium text-[10px] sm:text-custom-sm py-[6px] px-2.5 sm:py-[7px] sm:px-5 rounded-[5px] bg-blue text-white ease-out duration-200 hover:bg-blue-dark"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleAddToCart();
+            }}
+            className="inline-flex font-medium text-[10px] sm:text-custom-sm py-[6px] px-2.5 sm:py-[7px] sm:px-5 rounded-[5px] bg-blue text-white ease-out duration-200 hover:bg-blue-dark shadow-sm"
           >
             Add to cart
           </button>
 
           <button
-            onClick={() => handleItemToWishList()}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleItemToWishList();
+            }}
             aria-label="button for favorite select"
             id="favOne"
-            className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-[5px] shadow-1 ease-out duration-200 bg-white ${
+            className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-[5px] shadow-1 ease-out duration-200 bg-white dark:bg-slate-800 border border-transparent dark:border-slate-700 ${
               isInWishlist
-                ? "text-[#DC3545] hover:text-[#b02a37]"
-                : "text-dark hover:text-blue"
+                ? "text-[#EF4444] hover:text-[#DC2626]"
+                : "text-dark dark:text-slate-200 hover:text-blue dark:hover:text-blue-light"
             }`}
           >
             <svg
@@ -166,7 +212,7 @@ const SingleGridItem = ({ item }: { item: Product }) => {
               {isInWishlist ? (
                 <path
                   d="M7.99992 2.97255C6.45855 1.5935 4.73256 1.40058 3.33376 2.03998C1.85639 2.71528 0.833252 4.28336 0.833252 6.0914C0.833252 7.86842 1.57358 9.22404 2.5444 10.3172C3.32183 11.1926 4.2734 11.9253 5.1138 12.5724C5.30431 12.7191 5.48911 12.8614 5.66486 12.9999C6.00636 13.2691 6.37295 13.5562 6.74447 13.7733C7.11582 13.9903 7.53965 14.1667 7.99992 14.1667C8.46018 14.1667 8.88401 13.9903 9.25537 13.7733C9.62689 13.5562 9.99348 13.2691 10.335 12.9999C10.5107 12.8614 10.6955 12.7191 10.886 12.5724C11.7264 11.9253 12.678 11.1926 13.4554 10.3172C14.4263 9.22404 15.1666 7.86842 15.1666 6.0914C15.1666 4.28336 14.1434 2.71528 12.6661 2.03998C11.2673 1.40058 9.54129 1.5935 7.99992 2.97255Z"
-                  fill="#DC3545"
+                  fill="#EF4444"
                 />
               ) : (
                 <path
@@ -220,21 +266,21 @@ const SingleGridItem = ({ item }: { item: Product }) => {
           />
         </div>
 
-        <p className="text-[10px] sm:text-custom-sm">({reviewsCount})</p>
+        <p className="text-[10px] sm:text-custom-sm text-dark-4 dark:text-slate-400">({reviewsCount})</p>
       </div>
 
       <h3
         onClick={handleProductDetails}
-        className="font-medium text-dark text-[11px] sm:text-sm md:text-base ease-out duration-200 hover:text-blue mb-1 sm:mb-1.5 line-clamp-2 leading-5"
+        className="font-medium text-dark dark:text-slate-100 text-[11px] sm:text-sm md:text-base ease-out duration-200 hover:text-blue dark:hover:text-blue-light mb-1 sm:mb-1.5 line-clamp-2 leading-5 cursor-pointer"
       >
         <Link href={`/shop-details?id=${item.id}`}> {item.title} </Link>
       </h3>
 
       <span className="flex items-center gap-1 sm:gap-2 font-medium text-xs sm:text-sm md:text-lg">
-        <span className="text-dark">
+        <span className="text-dark dark:text-white font-semibold">
           ${typeof discountedPrice === "number" ? discountedPrice.toFixed(2) : discountedPrice}
         </span>
-        <span className="text-dark-4 line-through text-[10px] sm:text-xs">${item.price}</span>
+        <span className="text-dark-4 dark:text-slate-500 line-through text-[10px] sm:text-xs">${item.price}</span>
       </span>
     </div>
   );

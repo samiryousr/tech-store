@@ -43,11 +43,11 @@ const Newsletter = () => {
                     name="email"
                     id="email"
                     placeholder="Enter your email"
-                    className="w-full bg-gray-1 border border-gray-3 outline-none rounded-md placeholder:text-dark-4 py-3 px-5"
+                    className="w-full bg-white/90 dark:bg-slate-900/90 border border-white/20 dark:border-slate-700 outline-none rounded-md text-dark dark:text-white placeholder:text-dark-4 dark:placeholder:text-slate-400 py-3 px-5 focus:border-blue shadow-sm"
                   />
                   <button
                     type="submit"
-                    className="inline-flex justify-center py-3 px-7 text-white bg-blue font-medium rounded-md ease-out duration-200 hover:bg-blue-dark"
+                    className="inline-flex justify-center py-3 px-7 text-white bg-blue font-medium rounded-md ease-out duration-200 hover:bg-blue-dark shadow-md active:scale-95"
                   >
                     Subscribe
                   </button>

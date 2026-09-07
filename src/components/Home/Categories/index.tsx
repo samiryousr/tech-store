@@ -79,12 +79,12 @@ const Categories = () => {
 
   return (
     <section className="overflow-hidden pt-17.5">
-      <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 pb-15 border-b border-gray-3">
+      <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0 pb-15 border-b border-gray-3 dark:border-slate-800/80">
         <div>
           {/* <!-- section title --> */}
           <div className="mb-10 flex items-center justify-between">
             <div>
-              <span className="flex items-center gap-2.5 font-medium text-dark mb-1.5">
+              <span className="flex items-center gap-2.5 font-medium text-dark dark:text-slate-300 mb-1.5">
                 <svg
                   width="20"
                   height="20"
@@ -121,11 +121,10 @@ const Categories = () => {
                 </svg>
                 Categories
               </span>
-              <h2 className="font-semibold text-xl xl:text-heading-5 text-dark">
+              <h2 className="font-semibold text-xl xl:text-heading-5 text-dark dark:text-white">
                 Browse by Category
               </h2>
             </div>
-
           </div>
 
           <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 sm:gap-6 lg:grid-cols-4 lg:gap-7 xl:grid-cols-5 xl:gap-7.5">

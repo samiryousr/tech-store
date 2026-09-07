@@ -79,8 +79,8 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed left-0 top-0 w-full z-9999 bg-white dark:bg-slate-900 transition-all ease-in-out duration-300 ${
-        stickyMenu && "shadow"
+      className={`fixed left-0 top-0 w-full z-9999 bg-white/95 dark:bg-[#0b0f19]/95 backdrop-blur-md transition-all ease-in-out duration-300 border-b border-transparent dark:border-slate-800/80 ${
+        stickyMenu && "shadow-sm"
       }`}
     >
       <div className="max-w-[1170px] mx-auto px-4 sm:px-7.5 xl:px-0">
@@ -92,13 +92,13 @@ const Header = () => {
         >
           {/* <!-- header top left --> */}
           <div className="xl:w-auto flex-col sm:flex-row w-full flex sm:justify-between sm:items-center gap-5 sm:gap-10">
-            <Link className="flex-shrink-0" href="/">
-              <Image
-                src="/images/logo/logo.svg"
-                alt="Logo"
-                width={219}
-                height={36}
-              />
+            <Link className="flex-shrink-0 flex items-center gap-3" href="/">
+              <svg width="220" height="44" viewBox="0 0 220 44" fill="none" xmlns="http://www.w3.org/2000/svg" className="h-9 w-auto">
+                <rect x="0" y="6" width="32" height="32" rx="10" fill="#6B7CFF"/>
+                <path d="M10 12.5L18 20V31H10V12.5Z" fill="white"/>
+                <path d="M23 31V12.5L30.5 20V31H23Z" fill="white" opacity="0.8"/>
+                <text x="46" y="29" fill="currentColor" className="text-dark dark:text-white font-bold transition-colors" fontFamily="Arial, sans-serif" fontWeight="700" fontSize="24">Neora</text>
+              </svg>
             </Link>
 
             <div className="max-w-[475px] w-full">
@@ -108,7 +108,7 @@ const Header = () => {
 
                   <div className="relative max-w-[333px] sm:min-w-[333px] w-full">
                     {/* <!-- divider --> */}
-                    <span className="absolute left-0 top-1/2 -translate-y-1/2 inline-block w-px h-5.5 bg-gray-4"></span>
+                    <span className="absolute left-0 top-1/2 -translate-y-1/2 inline-block w-px h-5.5 bg-gray-4 dark:bg-slate-700"></span>
                     <input
                       onChange={(e) => setSearchQuery(e.target.value)}
                       value={searchQuery}
@@ -117,13 +117,13 @@ const Header = () => {
                       id="search"
                       placeholder="I am shopping for..."
                       autoComplete="off"
-                      className="custom-search w-full rounded-r-[5px] bg-gray-1 !border-l-0 border border-gray-3 py-2.5 pl-4 pr-10 outline-none ease-in duration-200"
+                      className="custom-search w-full rounded-r-[5px] bg-gray-1 dark:bg-[#131d2e] !border-l-0 border border-gray-3 dark:border-slate-700 py-2.5 pl-4 pr-10 outline-none ease-in duration-200 text-dark dark:text-white placeholder:text-dark-4 dark:placeholder:text-slate-400 focus:border-blue"
                     />
 
                     <button
                       id="search-btn"
                       aria-label="Search"
-                      className="flex items-center justify-center absolute right-3 top-1/2 -translate-y-1/2 ease-in duration-200 hover:text-blue"
+                      className="flex items-center justify-center absolute right-3 top-1/2 -translate-y-1/2 ease-in duration-200 hover:text-blue text-dark-4 dark:text-slate-400 dark:hover:text-blue-light"
                     >
                       <svg
                         className="fill-current"
@@ -151,7 +151,7 @@ const Header = () => {
                 type="button"
                 aria-label="Toggle dark mode"
                 onClick={() => setDarkMode((prev) => !prev)}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-3 bg-white text-dark hover:border-blue hover:text-blue dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-3 bg-white text-dark hover:border-blue hover:text-blue dark:border-slate-700 dark:bg-slate-800 dark:text-yellow shadow-sm transition-all active:scale-95"
               >
                 {darkMode ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="fill-current">
@@ -191,17 +191,17 @@ const Header = () => {
               </svg>
 
               <div>
-                <span className="block text-2xs text-dark-4 uppercase">
+                <span className="block text-2xs text-dark-4 dark:text-slate-400 uppercase">
                   24/7 SUPPORT
                 </span>
-                <p className="font-medium text-custom-sm text-dark">
+                <p className="font-medium text-custom-sm text-dark dark:text-white">
                   01022763033
                 </p>
               </div>
             </div>
 
             {/* <!-- divider --> */}
-            <span className="hidden xl:block w-px h-7.5 bg-gray-4"></span>
+            <span className="hidden xl:block w-px h-7.5 bg-gray-4 dark:bg-slate-700"></span>
 
             <div className="flex w-full lg:w-auto justify-between items-center gap-5">
               <div className="flex items-center gap-5">
@@ -228,10 +228,10 @@ const Header = () => {
                   </svg>
 
                   <div>
-                    <span className="block text-2xs text-dark-4 uppercase">
+                    <span className="block text-2xs text-dark-4 dark:text-slate-400 uppercase">
                       account
                     </span>
-                    <p className="font-medium text-custom-sm text-dark">
+                    <p className="font-medium text-custom-sm text-dark dark:text-white">
                       Sign In
                     </p>
                   </div>
@@ -273,16 +273,16 @@ const Header = () => {
                       />
                     </svg>
 
-                    <span className="flex items-center justify-center font-medium text-2xs absolute -right-2 -top-2.5 bg-blue w-4.5 h-4.5 rounded-full text-white">
+                    <span className="flex items-center justify-center font-medium text-2xs absolute -right-2 -top-2.5 bg-blue w-4.5 h-4.5 rounded-full text-white shadow-sm">
                       {product.length}
                     </span>
                   </span>
 
                   <div>
-                    <span className="block text-2xs text-dark-4 uppercase">
+                    <span className="block text-2xs text-dark-4 dark:text-slate-400 uppercase">
                       cart
                     </span>
-                    <p className="font-medium text-custom-sm text-dark">
+                    <p className="font-medium text-custom-sm text-dark dark:text-white">
                       ${totalPrice}
                     </p>
                   </div>
@@ -299,17 +299,17 @@ const Header = () => {
                 <span className="block relative cursor-pointer w-5.5 h-5.5">
                   <span className="du-block absolute right-0 w-full h-full">
                     <span
-                      className={`block relative top-0 left-0 bg-dark rounded-sm w-0 h-0.5 my-1 ease-in-out duration-200 delay-[0] ${
+                      className={`block relative top-0 left-0 bg-dark dark:bg-white rounded-sm w-0 h-0.5 my-1 ease-in-out duration-200 delay-[0] ${
                         !navigationOpen && "!w-full delay-300"
                       }`}
                     ></span>
                     <span
-                      className={`block relative top-0 left-0 bg-dark rounded-sm w-0 h-0.5 my-1 ease-in-out duration-200 delay-150 ${
+                      className={`block relative top-0 left-0 bg-dark dark:bg-white rounded-sm w-0 h-0.5 my-1 ease-in-out duration-200 delay-150 ${
                         !navigationOpen && "!w-full delay-400"
                       }`}
                     ></span>
                     <span
-                      className={`block relative top-0 left-0 bg-dark rounded-sm w-0 h-0.5 my-1 ease-in-out duration-200 delay-200 ${
+                      className={`block relative top-0 left-0 bg-dark dark:bg-white rounded-sm w-0 h-0.5 my-1 ease-in-out duration-200 delay-200 ${
                         !navigationOpen && "!w-full delay-500"
                       }`}
                     ></span>
@@ -317,12 +317,12 @@ const Header = () => {
 
                   <span className="block absolute right-0 w-full h-full rotate-45">
                     <span
-                      className={`block bg-dark rounded-sm ease-in-out duration-200 delay-300 absolute left-2.5 top-0 w-0.5 h-full ${
+                      className={`block bg-dark dark:bg-white rounded-sm ease-in-out duration-200 delay-300 absolute left-2.5 top-0 w-0.5 h-full ${
                         !navigationOpen && "!h-0 delay-[0] "
                       }`}
                     ></span>
                     <span
-                      className={`block bg-dark rounded-sm ease-in-out duration-200 delay-400 absolute left-0 top-2.5 w-full h-0.5 ${
+                      className={`block bg-dark dark:bg-white rounded-sm ease-in-out duration-200 delay-400 absolute left-0 top-2.5 w-full h-0.5 ${
                         !navigationOpen && "!h-0 dealy-200"
                       }`}
                     ></span>
@@ -336,14 +336,14 @@ const Header = () => {
         {/* <!-- header top end --> */}
       </div>
 
-      <div className="border-t border-gray-3">
+      <div className="border-t border-gray-3 dark:border-slate-800/80">
         <div className="max-w-[1170px] mx-auto px-4 sm:px-7.5 xl:px-0">
           <div className="flex items-center justify-between">
             {/* <!--=== Main Nav Start ===--> */}
             <div
               className={`w-[288px] absolute right-4 top-full xl:static xl:w-auto h-0 xl:h-auto invisible xl:visible xl:flex items-center justify-between ${
                 navigationOpen &&
-                `!visible bg-white shadow-lg border border-gray-3 !h-auto max-h-[400px] overflow-y-scroll rounded-md p-5`
+                `!visible bg-white dark:bg-[#111827] shadow-xl border border-gray-3 dark:border-slate-800 !h-auto max-h-[400px] overflow-y-scroll rounded-md p-5`
               }`}
             >
               {/* <!-- Main Nav Start --> */}
@@ -363,7 +363,7 @@ const Header = () => {
                       >
                         <Link
                           href={menuItem.path}
-                          className={`hover:text-blue text-custom-sm font-medium text-dark flex ${
+                          className={`hover:text-blue text-custom-sm font-medium text-dark dark:text-slate-200 dark:hover:text-blue-light flex ${
                             stickyMenu ? "xl:py-4" : "xl:py-6"
                           }`}
                         >
@@ -384,7 +384,7 @@ const Header = () => {
                 <li className="py-4">
                   <Link
                     href="/shop-details"
-                    className="flex items-center gap-1.5 font-medium text-custom-sm text-dark hover:text-blue"
+                    className="flex items-center gap-1.5 font-medium text-custom-sm text-dark dark:text-slate-200 hover:text-blue dark:hover:text-blue-light"
                   >
                     <svg
                       className="fill-current"
@@ -410,7 +410,7 @@ const Header = () => {
                 <li className="py-4">
                   <Link
                     href="/wishlist"
-                    className="flex items-center gap-1.5 font-medium text-custom-sm text-dark hover:text-blue"
+                    className="flex items-center gap-1.5 font-medium text-custom-sm text-dark dark:text-slate-200 hover:text-blue dark:hover:text-blue-light"
                   >
                     <svg
                       className="fill-current"

@@ -22,104 +22,106 @@ const Cart = () => {
       </section>
       {/* <!-- ===== Breadcrumb Section End ===== --> */}
       {cartItems.length > 0 ? (
-        <section className="overflow-hidden py-20 bg-gray-2">
+        <section className="overflow-hidden py-12 sm:py-16 lg:py-20 bg-gray-2 dark:bg-[#0B0F19]">
           <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
             <div className="flex flex-wrap items-center justify-between gap-5 mb-7.5">
-              <h2 className="font-medium text-dark text-2xl">Your Cart</h2>
+              <div className="flex items-center gap-3">
+                <h2 className="font-bold text-dark dark:text-white text-2xl sm:text-3xl">Your Cart</h2>
+                <span className="rounded-full bg-blue/10 dark:bg-blue/20 text-blue dark:text-blue-light text-xs sm:text-sm font-semibold px-3 py-1">
+                  {cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0)} items
+                </span>
+              </div>
+
               <button
                 type="button"
                 onClick={() => dispatch(removeAllItemsFromCart())}
-                className="text-blue"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-dark-4 dark:text-slate-400 hover:text-red dark:hover:text-red transition-colors"
               >
+                <svg className="fill-current w-4 h-4" viewBox="0 0 16 16">
+                  <path fillRule="evenodd" clipRule="evenodd" d="M10 2H6a1 1 0 0 0-1 1v1H2.5a.5.5 0 0 0 0 1h.56l.78 8.58A2 2 0 0 0 5.83 15h4.34a2 2 0 0 0 1.99-1.42l.78-8.58h.56a.5.5 0 0 0 0-1H11V3a1 1 0 0 0-1-1zm-4 2V3h4v1H6zm1 3.5a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V8a.5.5 0 0 1 .5-.5zm3 0a.5.5 0 0 1 .5.5v4a.5.5 0 0 1-1 0V8a.5.5 0 0 1 .5-.5z"/>
+                </svg>
                 Clear Shopping Cart
               </button>
             </div>
 
-            <div className="bg-white rounded-[10px] shadow-1">
-              <div className="w-full overflow-x-auto">
-                <div className="min-w-[1170px]">
+            <div className="bg-white dark:bg-[#111827] rounded-2xl shadow-1 dark:shadow-[0_10px_30px_rgba(0,0,0,0.4)] border border-gray-3/60 dark:border-slate-800 overflow-hidden">
+              {/* <!-- Desktop table view --> */}
+              <div className="hidden lg:block w-full overflow-x-auto no-scrollbar">
+                <div className="min-w-[1000px]">
                   {/* <!-- table header --> */}
-                  <div className="flex items-center py-5.5 px-7.5">
-                    <div className="min-w-[400px]">
-                      <p className="text-dark">Product</p>
+                  <div className="flex items-center py-4 px-6 sm:px-8 bg-gray-1/80 dark:bg-slate-800/60 border-b border-gray-3 dark:border-slate-800 text-xs font-semibold text-dark-4 dark:text-slate-400 uppercase tracking-wider">
+                    <div className="min-w-[420px] flex-1">
+                      <p>Product</p>
                     </div>
 
-                    <div className="min-w-[180px]">
-                      <p className="text-dark">Price</p>
+                    <div className="min-w-[160px]">
+                      <p>Price</p>
                     </div>
 
-                    <div className="min-w-[275px]">
-                      <p className="text-dark">Quantity</p>
+                    <div className="min-w-[220px]">
+                      <p>Quantity</p>
                     </div>
 
-                    <div className="min-w-[200px]">
-                      <p className="text-dark">Subtotal</p>
+                    <div className="min-w-[160px]">
+                      <p>Subtotal</p>
                     </div>
 
-                    <div className="min-w-[50px]">
-                      <p className="text-dark text-right">Action</p>
+                    <div className="min-w-[60px] text-right">
+                      <p>Action</p>
                     </div>
                   </div>
 
-                  {/* <!-- cart item --> */}
-                  {cartItems.length > 0 &&
-                    cartItems.map((item) => (
+                  {/* <!-- cart items --> */}
+                  <div className="divide-y divide-gray-3 dark:divide-slate-800">
+                    {cartItems.map((item) => (
                       <SingleItem item={item} key={item.id} />
                     ))}
+                  </div>
                 </div>
+              </div>
+
+              {/* <!-- Mobile card list view --> */}
+              <div className="block lg:hidden divide-y divide-gray-3 dark:divide-slate-800">
+                {cartItems.map((item) => (
+                  <SingleItem item={item} key={item.id} isMobile />
+                ))}
               </div>
             </div>
 
-            <div className="flex flex-col lg:flex-row gap-7.5 xl:gap-11 mt-9">
+            <div className="flex flex-col lg:flex-row gap-7.5 xl:gap-11 mt-10">
               <Discount />
               <OrderSummary />
             </div>
           </div>
         </section>
       ) : (
-        <>
-          <div className="text-center mt-8">
-            <div className="mx-auto pb-7.5">
-              <svg
-                className="mx-auto"
-                width="100"
-                height="100"
-                viewBox="0 0 100 100"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle cx="50" cy="50" r="50" fill="#F3F4F6" />
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M36.1693 36.2421C35.6126 36.0565 35.0109 36.3574 34.8253 36.9141C34.6398 37.4707 34.9406 38.0725 35.4973 38.258L35.8726 38.3831C36.8308 38.7025 37.4644 38.9154 37.9311 39.1325C38.373 39.3381 38.5641 39.5036 38.6865 39.6734C38.809 39.8433 38.9055 40.0769 38.9608 40.5612C39.0192 41.0726 39.0208 41.7409 39.0208 42.751L39.0208 46.5361C39.0208 48.4735 39.0207 50.0352 39.1859 51.2634C39.3573 52.5385 39.7241 53.6122 40.5768 54.4649C41.4295 55.3176 42.5032 55.6844 43.7783 55.8558C45.0065 56.0209 46.5681 56.0209 48.5055 56.0209H59.9166C60.5034 56.0209 60.9791 55.5452 60.9791 54.9584C60.9791 54.3716 60.5034 53.8959 59.9166 53.8959H48.5833C46.5498 53.8959 45.1315 53.8936 44.0615 53.7498C43.022 53.61 42.4715 53.3544 42.0794 52.9623C41.9424 52.8253 41.8221 52.669 41.7175 52.4792H55.7495C56.3846 52.4792 56.9433 52.4793 57.4072 52.4292C57.9093 52.375 58.3957 52.2546 58.8534 51.9528C59.3111 51.651 59.6135 51.2513 59.8611 50.8111C60.0898 50.4045 60.3099 49.891 60.56 49.3072L61.2214 47.7641C61.766 46.4933 62.2217 45.4302 62.4498 44.5655C62.6878 43.6634 62.7497 42.7216 62.1884 41.8704C61.627 41.0191 60.737 40.705 59.8141 40.5684C58.9295 40.4374 57.7729 40.4375 56.3903 40.4375L41.0845 40.4375C41.0806 40.3979 41.0765 40.3588 41.0721 40.3201C40.9937 39.6333 40.8228 39.0031 40.4104 38.4309C39.998 37.8588 39.4542 37.4974 38.8274 37.2058C38.2377 36.9315 37.4879 36.6816 36.6005 36.3858L36.1693 36.2421ZM41.1458 42.5625C41.1458 42.6054 41.1458 42.6485 41.1458 42.692L41.1458 46.4584C41.1458 48.1187 41.1473 49.3688 41.2262 50.3542H55.6975C56.4 50.3542 56.8429 50.3528 57.1791 50.3165C57.4896 50.2829 57.6091 50.2279 57.6836 50.1787C57.7582 50.1296 57.8559 50.0415 58.009 49.7692C58.1748 49.4745 58.3506 49.068 58.6273 48.4223L59.2344 47.0057C59.8217 45.6355 60.2119 44.7177 60.3951 44.0235C60.5731 43.3488 60.4829 43.1441 60.4143 43.0401C60.3458 42.9362 60.1931 42.7727 59.5029 42.6705C58.7927 42.5653 57.7954 42.5625 56.3047 42.5625H41.1458Z"
-                  fill="#8D93A5"
-                />
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M40.4375 60.625C40.4375 62.3855 41.8646 63.8125 43.625 63.8125C45.3854 63.8125 46.8125 62.3855 46.8125 60.625C46.8125 58.8646 45.3854 57.4375 43.625 57.4375C41.8646 57.4375 40.4375 58.8646 40.4375 60.625ZM43.625 61.6875C43.0382 61.6875 42.5625 61.2118 42.5625 60.625C42.5625 60.0382 43.0382 59.5625 43.625 59.5625C44.2118 59.5625 44.6875 60.0382 44.6875 60.625C44.6875 61.2118 44.2118 61.6875 43.625 61.6875Z"
-                  fill="#8D93A5"
-                />
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M56.375 63.8126C54.6146 63.8126 53.1875 62.3856 53.1875 60.6251C53.1875 58.8647 54.6146 57.4376 56.375 57.4376C58.1354 57.4376 59.5625 58.8647 59.5625 60.6251C59.5625 62.3856 58.1354 63.8126 56.375 63.8126ZM55.3125 60.6251C55.3125 61.212 55.7882 61.6876 56.375 61.6876C56.9618 61.6876 57.4375 61.212 57.4375 60.6251C57.4375 60.0383 56.9618 59.5626 56.375 59.5626C55.7882 59.5626 55.3125 60.0383 55.3125 60.6251Z"
-                  fill="#8D93A5"
-                />
+        <section className="py-20 sm:py-28 bg-gray-2 dark:bg-[#0B0F19]">
+          <div className="max-w-[600px] mx-auto px-4 text-center">
+            <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-blue-50 dark:bg-slate-800/80 flex items-center justify-center text-blue dark:text-blue-light shadow-sm">
+              <svg className="w-12 h-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
               </svg>
             </div>
 
-            <p className="pb-6">Your cart is empty!</p>
+            <h3 className="text-2xl sm:text-3xl font-bold text-dark dark:text-white mb-3">
+              Your cart is empty
+            </h3>
+
+            <p className="text-sm sm:text-base text-dark-4 dark:text-slate-400 mb-8 max-w-[400px] mx-auto">
+              Looks like you haven&apos;t added any items to your cart yet. Discover our latest tech gear and gadgets!
+            </p>
 
             <Link
               href="/shop-with-sidebar"
-              className="w-full max-w-96 mx-auto flex justify-center font-medium text-white bg-dark py-[13px] px-6 rounded-md ease-out duration-200 hover:bg-opacity-95"
+              className="inline-flex items-center justify-center gap-2 font-medium text-white bg-blue py-3.5 px-8 rounded-xl ease-out duration-200 hover:bg-blue-dark shadow-md hover:shadow-lg active:scale-95"
             >
-              Continue Shopping
+              <span>Explore Products</span>
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
             </Link>
           </div>
-        </>
+        </section>
       )}
     </>
   );

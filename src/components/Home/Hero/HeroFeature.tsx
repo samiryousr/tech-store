@@ -29,10 +29,10 @@ const HeroFeature = () => {
             />
 
             <div>
-              <h3 className="font-medium text-sm sm:text-lg text-dark">
+              <h3 className="font-medium text-sm sm:text-lg text-dark dark:text-white">
                 {item.title}
               </h3>
-              <p className="text-[11px] sm:text-sm">{item.description}</p>
+              <p className="text-[11px] sm:text-sm text-dark-4 dark:text-slate-400">{item.description}</p>
             </div>
           </div>
         ))}
