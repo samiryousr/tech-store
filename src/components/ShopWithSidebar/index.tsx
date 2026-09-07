@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Breadcrumb from "../Common/Breadcrumb";
 import CustomSelect from "./CustomSelect";
 import CategoryDropdown from "./CategoryDropdown";
@@ -12,14 +12,60 @@ import SingleGridItem from "../Shop/SingleGridItem";
 import SingleListItem from "../Shop/SingleListItem";
 import { Product } from "@/types/product";
 
+const sortOptions = [
+  { label: "Latest Products", value: "latest" },
+  { label: "Price: Low to High", value: "price_asc" },
+  { label: "Price: High to Low", value: "price_desc" },
+  { label: "Highest Rated", value: "rating" },
+  { label: "Biggest Discount", value: "discount" },
+];
+
+const ITEMS_PER_PAGE = 9;
+
 const ShopWithSidebar = () => {
-  const [productStyle, setProductStyle] = useState("grid");
-  const [shopData, setShopData] = useState<Product[]>([]);
+  const [productStyle, setProductStyle] = useState<"grid" | "list">("grid");
+  const [rawProducts, setRawProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [productSidebar, setProductSidebar] = useState(false);
   const [stickyMenu, setStickyMenu] = useState(false);
 
+  // Filter & Sort States
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedGender, setSelectedGender] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
+  const [selectedSort, setSelectedSort] = useState(sortOptions[0]);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Price range state
+  const [priceBounds, setPriceBounds] = useState<[number, number]>([0, 2000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 2000]);
+
   useEffect(() => {
-    getShopData().then((data) => setShopData(data.products));
+    let isMounted = true;
+    getShopData()
+      .then((data) => {
+        if (!isMounted) return;
+        const products = Array.isArray(data.products) ? data.products : [];
+        setRawProducts(products);
+
+        if (products.length > 0) {
+          const prices = products.map((p) => p.discountedPrice ?? p.price ?? 0);
+          const minP = Math.floor(Math.min(...prices));
+          const maxP = Math.ceil(Math.max(...prices));
+          setPriceBounds([minP, maxP]);
+          setPriceRange([minP, maxP]);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error loading products:", err);
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleStickyMenu = () => {
@@ -30,66 +76,168 @@ const ShopWithSidebar = () => {
     }
   };
 
-  const options = [
-    { label: "Latest Products", value: "0" },
-    { label: "Best Selling", value: "1" },
-    { label: "Old Products", value: "2" },
-  ];
+  // Compute Categories from products
+  const categoriesList = useMemo(() => {
+    const counts: { [cat: string]: number } = {};
+    rawProducts.forEach((p) => {
+      if (p.category) {
+        counts[p.category] = (counts[p.category] || 0) + 1;
+      }
+    });
+    return Object.entries(counts).map(([name, count]) => ({
+      name,
+      products: count,
+    }));
+  }, [rawProducts]);
 
-  const categories = [
-    {
-      name: "Desktop",
-      products: 10,
-      isRefined: true,
-    },
-    {
-      name: "Laptop",
-      products: 12,
-      isRefined: false,
-    },
-    {
-      name: "Monitor",
-      products: 30,
-      isRefined: false,
-    },
-    {
-      name: "UPS",
-      products: 23,
-      isRefined: false,
-    },
-    {
-      name: "Phone",
-      products: 10,
-      isRefined: false,
-    },
-    {
-      name: "Watch",
-      products: 13,
-      isRefined: false,
-    },
-  ];
+  // Compute Gender/Collection from products
+  const gendersList = useMemo(() => {
+    let menCount = 0;
+    let womenCount = 0;
+    let unisexCount = 0;
 
-  const genders = [
-    {
-      name: "Men",
-      products: 10,
-    },
-    {
-      name: "Women",
-      products: 23,
-    },
-    {
-      name: "Unisex",
-      products: 8,
-    },
-  ];
+    rawProducts.forEach((p) => {
+      const text = `${p.category || ""} ${p.title || ""} ${(p.tags || []).join(" ")}`.toLowerCase();
+      if (text.includes("men") && !text.includes("women")) {
+        menCount++;
+      } else if (text.includes("women") || text.includes("beauty") || text.includes("fragrance") || text.includes("dress")) {
+        womenCount++;
+      } else {
+        unisexCount++;
+      }
+    });
+
+    return [
+      { name: "Men", products: menCount },
+      { name: "Women", products: womenCount },
+      { name: "Unisex", products: unisexCount },
+    ];
+  }, [rawProducts]);
+
+  // Filter and Sort products
+  const filteredProducts = useMemo(() => {
+    let list = [...rawProducts];
+
+    // Category filter
+    if (selectedCategory) {
+      list = list.filter(
+        (p) => p.category?.toLowerCase() === selectedCategory.toLowerCase()
+      );
+    }
+
+    // Price range filter
+    list = list.filter((p) => {
+      const price = p.discountedPrice ?? p.price ?? 0;
+      return price >= priceRange[0] && price <= priceRange[1];
+    });
+
+    // Gender filter
+    if (selectedGender) {
+      const g = selectedGender.toLowerCase();
+      if (g === "men") {
+        list = list.filter((p) => {
+          const text = `${p.category || ""} ${p.title || ""} ${(p.tags || []).join(" ")}`.toLowerCase();
+          return text.includes("men") && !text.includes("women");
+        });
+      } else if (g === "women") {
+        list = list.filter((p) => {
+          const text = `${p.category || ""} ${p.title || ""} ${(p.tags || []).join(" ")}`.toLowerCase();
+          return text.includes("women") || text.includes("beauty") || text.includes("fragrance") || text.includes("dress");
+        });
+      } else if (g === "unisex") {
+        list = list.filter((p) => {
+          const text = `${p.category || ""} ${p.title || ""} ${(p.tags || []).join(" ")}`.toLowerCase();
+          return !text.includes("men") && !text.includes("women");
+        });
+      }
+    }
+
+    // Color filter
+    if (selectedColor) {
+      const col = selectedColor.toLowerCase();
+      list = list.filter((p) => {
+        const text = `${p.title || ""} ${p.description || ""} ${(p.tags || []).join(" ")}`.toLowerCase();
+        return text.includes(col);
+      });
+    }
+
+    // Size filter
+    if (selectedSize) {
+      const sz = selectedSize.toLowerCase();
+      list = list.filter((p) => {
+        const text = `${p.title || ""} ${p.description || ""} ${(p.tags || []).join(" ")}`.toLowerCase();
+        return text.includes(sz);
+      });
+    }
+
+    // Sorting
+    if (selectedSort.value === "price_asc") {
+      list.sort((a, b) => (a.discountedPrice ?? a.price) - (b.discountedPrice ?? b.price));
+    } else if (selectedSort.value === "price_desc") {
+      list.sort((a, b) => (b.discountedPrice ?? b.price) - (a.discountedPrice ?? a.price));
+    } else if (selectedSort.value === "rating") {
+      list.sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+    } else if (selectedSort.value === "discount") {
+      list.sort((a, b) => (b.discountPercentage ?? 0) - (a.discountPercentage ?? 0));
+    } else {
+      list.sort((a, b) => b.id - a.id);
+    }
+
+    return list;
+  }, [
+    rawProducts,
+    selectedCategory,
+    priceRange,
+    selectedGender,
+    selectedColor,
+    selectedSize,
+    selectedSort,
+  ]);
+
+  // Reset to page 1 whenever any filter/sort changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [
+    selectedCategory,
+    priceRange,
+    selectedGender,
+    selectedColor,
+    selectedSize,
+    selectedSort,
+  ]);
+
+  // Pagination calculation
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedProducts = filteredProducts.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE
+  );
+
+  // Clean all filters
+  const handleCleanAll = () => {
+    setSelectedCategory("");
+    setSelectedGender("");
+    setSelectedSize("");
+    setSelectedColor("");
+    setPriceRange(priceBounds);
+    setSelectedSort(sortOptions[0]);
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters =
+    Boolean(selectedCategory) ||
+    Boolean(selectedGender) ||
+    Boolean(selectedSize) ||
+    Boolean(selectedColor) ||
+    priceRange[0] !== priceBounds[0] ||
+    priceRange[1] !== priceBounds[1];
 
   useEffect(() => {
     window.addEventListener("scroll", handleStickyMenu);
 
-    // closing sidebar while clicking outside
-    function handleClickOutside(event) {
-      if (!event.target.closest(".sidebar-content")) {
+    function handleClickOutside(event: MouseEvent) {
+      if (!(event.target as HTMLElement).closest(".sidebar-content")) {
         setProductSidebar(false);
       }
     }
@@ -99,9 +247,10 @@ const ShopWithSidebar = () => {
     }
 
     return () => {
+      window.removeEventListener("scroll", handleStickyMenu);
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  });
+  }, [productSidebar]);
 
   return (
     <>
@@ -116,7 +265,7 @@ const ShopWithSidebar = () => {
             <div
               className={`sidebar-content fixed xl:z-1 z-9999 left-0 top-0 xl:translate-x-0 xl:static max-w-[310px] xl:max-w-[270px] w-full ease-out duration-200 ${
                 productSidebar
-                  ? "translate-x-0 bg-white p-5 h-screen overflow-y-auto"
+                  ? "translate-x-0 bg-white p-5 h-screen overflow-y-auto shadow-2xl"
                   : "-translate-x-full"
               }`}
             >
@@ -154,48 +303,93 @@ const ShopWithSidebar = () => {
 
               <form onSubmit={(e) => e.preventDefault()}>
                 <div className="flex flex-col gap-6">
-                  {/* <!-- filter box --> */}
+                  {/* Filter box / Clean all */}
                   <div className="bg-white shadow-1 rounded-lg py-4 px-5">
                     <div className="flex items-center justify-between">
-                      <p>Filters:</p>
-                      <button className="text-blue">Clean All</button>
+                      <p className="font-medium text-dark">Filters</p>
+                      {hasActiveFilters && (
+                        <button
+                          type="button"
+                          onClick={handleCleanAll}
+                          className="text-blue text-sm font-medium hover:underline cursor-pointer"
+                        >
+                          Clean All
+                        </button>
+                      )}
                     </div>
                   </div>
 
-                  {/* <!-- category box --> */}
-                  <CategoryDropdown categories={categories} />
+                  {/* Category box */}
+                  <CategoryDropdown
+                    categories={categoriesList}
+                    selectedCategory={selectedCategory}
+                    onSelectCategory={(cat) =>
+                      setSelectedCategory(selectedCategory === cat ? "" : cat)
+                    }
+                  />
 
-                  {/* <!-- gender box --> */}
-                  <GenderDropdown genders={genders} />
+                  {/* Price range box */}
+                  <PriceDropdown
+                    minPrice={priceBounds[0]}
+                    maxPrice={priceBounds[1]}
+                    priceRange={priceRange}
+                    onPriceChange={(newRange) => setPriceRange(newRange)}
+                  />
 
-                  {/* // <!-- size box --> */}
-                  <SizeDropdown />
+                  {/* Gender / Collection box */}
+                  <GenderDropdown
+                    genders={gendersList}
+                    selectedGender={selectedGender}
+                    onSelectGender={(g) =>
+                      setSelectedGender(selectedGender === g ? "" : g)
+                    }
+                  />
 
-                  {/* // <!-- color box --> */}
-                  <ColorsDropdwon />
+                  {/* Color box */}
+                  <ColorsDropdwon
+                    selectedColor={selectedColor}
+                    onSelectColor={(col) => setSelectedColor(col)}
+                  />
 
-                  {/* // <!-- price range box --> */}
-                  <PriceDropdown />
+                  {/* Size box */}
+                  <SizeDropdown
+                    selectedSize={selectedSize}
+                    onSelectSize={(sz) => setSelectedSize(sz)}
+                  />
                 </div>
               </form>
             </div>
-            {/* // <!-- Sidebar End --> */}
+            {/* <!-- Sidebar End --> */}
 
-            {/* // <!-- Content Start --> */}
+            {/* <!-- Content Start --> */}
             <div className="xl:max-w-[870px] w-full">
+              {/* Top bar */}
               <div className="rounded-lg bg-white shadow-1 pl-3 pr-2.5 py-2.5 mb-6">
-                <div className="flex items-center justify-between">
-                  {/* <!-- top bar left --> */}
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  {/* Top bar left */}
                   <div className="flex flex-wrap items-center gap-4">
-                    <CustomSelect options={options} />
+                    <CustomSelect
+                      options={sortOptions}
+                      selected={selectedSort}
+                      onChange={(opt) => setSelectedSort(opt)}
+                    />
 
-                    <p>
-                      Showing <span className="text-dark">9 of 50</span>{" "}
+                    <p className="text-sm text-dark-4">
+                      Showing{" "}
+                      <span className="text-dark font-medium">
+                        {filteredProducts.length === 0
+                          ? "0"
+                          : `${startIndex + 1}–${Math.min(
+                              startIndex + ITEMS_PER_PAGE,
+                              filteredProducts.length
+                            )}`}{" "}
+                        of {filteredProducts.length}
+                      </span>{" "}
                       Products
                     </p>
                   </div>
 
-                  {/* <!-- top bar right --> */}
+                  {/* Top bar right: Grid / List view toggle */}
                   <div className="flex items-center gap-2.5">
                     <button
                       onClick={() => setProductStyle("grid")}
@@ -274,145 +468,257 @@ const ShopWithSidebar = () => {
                     </button>
                   </div>
                 </div>
-              </div>
 
-              {/* <!-- Products Grid Tab Content Start --> */}
-              <div
-                className={`${
-                  productStyle === "grid"
-                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-7.5 gap-y-9"
-                    : "flex flex-col gap-7.5"
-                }`}
-              >
-                {shopData.map((item, key) =>
-                  productStyle === "grid" ? (
-                    <SingleGridItem item={item} key={key} />
-                  ) : (
-                    <SingleListItem item={item} key={key} />
-                  )
+                {/* Active Filters Badges */}
+                {hasActiveFilters && (
+                  <div className="flex flex-wrap items-center gap-2 pt-3 border-t border-gray-2 mt-3">
+                    <span className="text-xs text-dark-4 font-medium">
+                      Active Filters:
+                    </span>
+                    {selectedCategory && (
+                      <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-blue/10 text-blue">
+                        Category: {selectedCategory}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCategory("")}
+                          className="hover:text-red-500"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    )}
+                    {(priceRange[0] !== priceBounds[0] ||
+                      priceRange[1] !== priceBounds[1]) && (
+                      <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-blue/10 text-blue">
+                        Price: ${priceRange[0]} - ${priceRange[1]}
+                        <button
+                          type="button"
+                          onClick={() => setPriceRange(priceBounds)}
+                          className="hover:text-red-500"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    )}
+                    {selectedGender && (
+                      <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-blue/10 text-blue">
+                        {selectedGender}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedGender("")}
+                          className="hover:text-red-500"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    )}
+                    {selectedColor && (
+                      <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-blue/10 text-blue">
+                        Color: {selectedColor}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedColor("")}
+                          className="hover:text-red-500"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    )}
+                    {selectedSize && (
+                      <span className="inline-flex items-center gap-1.5 py-1 px-2.5 rounded-full text-xs font-medium bg-blue/10 text-blue">
+                        Size: {selectedSize}
+                        <button
+                          type="button"
+                          onClick={() => setSelectedSize("")}
+                          className="hover:text-red-500"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      onClick={handleCleanAll}
+                      className="text-xs text-red-500 hover:underline font-medium ml-1"
+                    >
+                      Clear All
+                    </button>
+                  </div>
                 )}
               </div>
-              {/* <!-- Products Grid Tab Content End --> */}
 
-              {/* <!-- Products Pagination Start --> */}
-              <div className="flex justify-center mt-15">
-                <div className="bg-white shadow-1 rounded-md p-2">
-                  <ul className="flex items-center">
-                    <li>
-                      <button
-                        id="paginationLeft"
-                        aria-label="button for pagination left"
-                        type="button"
-                        disabled
-                        className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px disabled:text-gray-4"
-                      >
-                        <svg
-                          className="fill-current"
-                          width="18"
-                          height="18"
-                          viewBox="0 0 18 18"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M12.1782 16.1156C12.0095 16.1156 11.8407 16.0594 11.7282 15.9187L5.37197 9.45C5.11885 9.19687 5.11885 8.80312 5.37197 8.55L11.7282 2.08125C11.9813 1.82812 12.3751 1.82812 12.6282 2.08125C12.8813 2.33437 12.8813 2.72812 12.6282 2.98125L6.72197 9L12.6563 15.0187C12.9095 15.2719 12.9095 15.6656 12.6563 15.9187C12.4876 16.0312 12.347 16.1156 12.1782 16.1156Z"
-                            fill=""
-                          />
-                        </svg>
-                      </button>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] bg-blue text-white hover:text-white hover:bg-blue"
-                      >
-                        1
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        2
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        3
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        4
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        5
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        ...
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        10
-                      </a>
-                    </li>
-
-                    <li>
-                      <button
-                        id="paginationLeft"
-                        aria-label="button for pagination left"
-                        type="button"
-                        className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] hover:text-white hover:bg-blue disabled:text-gray-4"
-                      >
-                        <svg
-                          className="fill-current"
-                          width="18"
-                          height="18"
-                          viewBox="0 0 18 18"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            d="M5.82197 16.1156C5.65322 16.1156 5.5126 16.0594 5.37197 15.9469C5.11885 15.6937 5.11885 15.3 5.37197 15.0469L11.2782 9L5.37197 2.98125C5.11885 2.72812 5.11885 2.33437 5.37197 2.08125C5.6251 1.82812 6.01885 1.82812 6.27197 2.08125L12.6282 8.55C12.8813 8.80312 12.8813 9.19687 12.6282 9.45L6.27197 15.9187C6.15947 16.0312 5.99072 16.1156 5.82197 16.1156Z"
-                            fill=""
-                          />
-                        </svg>
-                      </button>
-                    </li>
-                  </ul>
+              {/* Products Content */}
+              {loading ? (
+                <div className="flex justify-center items-center min-h-[350px]">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue border-t-transparent" />
                 </div>
-              </div>
-              {/* <!-- Products Pagination End --> */}
+              ) : paginatedProducts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center min-h-[350px] p-8 text-center bg-gray-1 rounded-xl">
+                  <div className="w-16 h-16 rounded-full bg-blue/10 flex items-center justify-center text-blue mb-4">
+                    <svg
+                      className="w-8 h-8"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-medium text-dark mb-2">
+                    No products found
+                  </h3>
+                  <p className="text-dark-4 max-w-md mb-6">
+                    No products matched your active filters. Try adjusting your
+                    price range, category, or clear filters.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleCleanAll}
+                    className="inline-flex items-center gap-2 py-2.5 px-6 rounded-md bg-blue text-white font-medium hover:bg-blue-dark transition-all"
+                  >
+                    Reset All Filters
+                  </button>
+                </div>
+              ) : (
+                <div
+                  className={`${
+                    productStyle === "grid"
+                      ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-7.5 gap-y-9"
+                      : "flex flex-col gap-7.5"
+                  }`}
+                >
+                  {paginatedProducts.map((item, key) =>
+                    productStyle === "grid" ? (
+                      <SingleGridItem item={item} key={item.id ?? key} />
+                    ) : (
+                      <SingleListItem item={item} key={item.id ?? key} />
+                    )
+                  )}
+                </div>
+              )}
+
+              {/* Products Pagination */}
+              {totalPages > 1 && (
+                <div className="flex justify-center mt-15">
+                  <div className="bg-white shadow-1 rounded-md p-2">
+                    <ul className="flex items-center gap-1">
+                      {/* Previous Page Button */}
+                      <li>
+                        <button
+                          onClick={() => {
+                            setCurrentPage((prev) => Math.max(1, prev - 1));
+                            window.scrollTo({ top: 250, behavior: "smooth" });
+                          }}
+                          disabled={currentPage === 1}
+                          aria-label="button for pagination left"
+                          type="button"
+                          className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue hover:text-white"
+                        >
+                          <svg
+                            className="fill-current"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 18 18"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M12.1782 16.1156C12.0095 16.1156 11.8407 16.0594 11.7282 15.9187L5.37197 9.45C5.11885 9.19687 5.11885 8.80312 5.37197 8.55L11.7282 2.08125C11.9813 1.82812 12.3751 1.82812 12.6282 2.08125C12.8813 2.33437 12.8813 2.72812 12.6282 2.98125L6.72197 9L12.6563 15.0187C12.9095 15.2719 12.9095 15.6656 12.6563 15.9187C12.4876 16.0312 12.347 16.1156 12.1782 16.1156Z"
+                              fill=""
+                            />
+                          </svg>
+                        </button>
+                      </li>
+
+                      {/* Numbered Page Buttons */}
+                      {Array.from({ length: totalPages }).map((_, idx) => {
+                        const pageNum = idx + 1;
+                        const isCurrent = currentPage === pageNum;
+
+                        // Show first, last, current, and adjacent pages
+                        if (
+                          pageNum === 1 ||
+                          pageNum === totalPages ||
+                          (pageNum >= currentPage - 1 &&
+                            pageNum <= currentPage + 1)
+                        ) {
+                          return (
+                            <li key={pageNum}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setCurrentPage(pageNum);
+                                  window.scrollTo({
+                                    top: 250,
+                                    behavior: "smooth",
+                                  });
+                                }}
+                                className={`flex py-1.5 px-3.5 duration-200 rounded-[3px] font-medium text-sm ${
+                                  isCurrent
+                                    ? "bg-blue text-white shadow-sm"
+                                    : "text-dark hover:text-white hover:bg-blue"
+                                }`}
+                              >
+                                {pageNum}
+                              </button>
+                            </li>
+                          );
+                        } else if (
+                          pageNum === currentPage - 2 ||
+                          pageNum === currentPage + 2
+                        ) {
+                          return (
+                            <li
+                              key={pageNum}
+                              className="px-1 text-dark-4 text-sm"
+                            >
+                              ...
+                            </li>
+                          );
+                        }
+                        return null;
+                      })}
+
+                      {/* Next Page Button */}
+                      <li>
+                        <button
+                          onClick={() => {
+                            setCurrentPage((prev) =>
+                              Math.min(totalPages, prev + 1)
+                            );
+                            window.scrollTo({ top: 250, behavior: "smooth" });
+                          }}
+                          disabled={currentPage === totalPages}
+                          aria-label="button for pagination right"
+                          type="button"
+                          className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] disabled:opacity-40 disabled:cursor-not-allowed hover:text-white hover:bg-blue"
+                        >
+                          <svg
+                            className="fill-current"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 18 18"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M5.82197 16.1156C5.65322 16.1156 5.5126 16.0594 5.37197 15.9469C5.11885 15.6937 5.11885 15.3 5.37197 15.0469L11.2782 9L5.37197 2.98125C5.11885 2.72812 5.11885 2.33437 5.37197 2.08125C5.6251 1.82812 6.01885 1.82812 6.27197 2.08125L12.6282 8.55C12.8813 8.80312 12.8813 9.19687 12.6282 9.45L6.27197 15.9187C6.15947 16.0312 5.99072 16.1156 5.82197 16.1156Z"
+                              fill=""
+                            />
+                          </svg>
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              )}
             </div>
-            {/* // <!-- Content End --> */}
+            {/* <!-- Content End --> */}
           </div>
         </div>
       </section>

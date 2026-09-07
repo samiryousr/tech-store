@@ -1,19 +1,32 @@
 "use client";
 import React, { useState } from "react";
 
-const SizeDropdown = () => {
+interface SizeDropdownProps {
+  selectedSize?: string;
+  onSelectSize?: (size: string) => void;
+}
+
+const SizeDropdown = ({ selectedSize, onSelectSize }: SizeDropdownProps) => {
   const [toggleDropdown, setToggleDropdown] = useState(true);
+  const sizes = ["S", "M", "L", "XL", "XXL"];
+
+  const handleSizeClick = (size: string) => {
+    if (onSelectSize) {
+      onSelectSize(selectedSize === size ? "" : size);
+    }
+  };
+
   return (
     <div className="bg-white shadow-1 rounded-lg">
       <div
         onClick={() => setToggleDropdown(!toggleDropdown)}
-        className={`cursor-pointer flex items-center justify-between py-3 pl-6 pr-5.5 ${
+        className={`cursor-pointer flex items-center justify-between py-3 pl-6 pr-5.5 select-none ${
           toggleDropdown && "shadow-filter"
         }`}
       >
-        <p className="text-dark">Size</p>
+        <p className="text-dark font-medium">Size</p>
         <button
-          onClick={() => setToggleDropdown(!toggleDropdown)}
+          type="button"
           aria-label="button for size dropdown"
           className={`text-dark ease-out duration-200 ${
             toggleDropdown && "rotate-180"
@@ -37,59 +50,29 @@ const SizeDropdown = () => {
         </button>
       </div>
 
-      {/* // <!-- dropdown menu --> */}
+      {/* dropdown menu */}
       <div
         className={`flex-wrap gap-2.5 p-6 ${
           toggleDropdown ? "flex" : "hidden"
         }`}
       >
-        <label
-          htmlFor="sizeM"
-          className="cursor-pointer select-none flex items-center rounded-md bg-blue text-white hover:bg-blue hover:text-white"
-        >
-          <div className="relative">
-            <input type="radio" name="size" id="sizeM" className="sr-only" />
-            <div className="text-custom-sm py-[5px] px-3.5 rounded-[5px]">
-              M
-            </div>
-          </div>
-        </label>
-
-        <label
-          htmlFor="sizeL"
-          className="cursor-pointer select-none flex items-center rounded-md hover:bg-blue hover:text-white"
-        >
-          <div className="relative">
-            <input type="radio" name="size" id="sizeL" className="sr-only" />
-            <div className="text-custom-sm py-[5px] px-3.5 rounded-[5px]">
-              L
-            </div>
-          </div>
-        </label>
-
-        <label
-          htmlFor="sizeXL"
-          className="cursor-pointer select-none flex items-center rounded-md hover:bg-blue hover:text-white"
-        >
-          <div className="relative">
-            <input type="radio" name="size" id="sizeXL" className="sr-only" />
-            <div className="text-custom-sm py-[5px] px-3.5 rounded-[5px]">
-              XL
-            </div>
-          </div>
-        </label>
-
-        <label
-          htmlFor="sizeXXL"
-          className="cursor-pointer select-none flex items-center rounded-md hover:bg-blue hover:text-white"
-        >
-          <div className="relative">
-            <input type="radio" name="size" id="sizeXXL" className="sr-only" />
-            <div className="text-custom-sm py-[5px] px-3.5 rounded-[5px]">
-              XXL
-            </div>
-          </div>
-        </label>
+        {sizes.map((size, index) => {
+          const isSelected = selectedSize === size;
+          return (
+            <button
+              type="button"
+              key={index}
+              onClick={() => handleSizeClick(size)}
+              className={`cursor-pointer select-none flex items-center rounded-md text-custom-sm py-1.5 px-3.5 transition-all border ${
+                isSelected
+                  ? "bg-blue border-blue text-white shadow-md font-medium"
+                  : "bg-gray-1 border-gray-3 text-dark hover:border-blue hover:text-blue"
+              }`}
+            >
+              {size}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

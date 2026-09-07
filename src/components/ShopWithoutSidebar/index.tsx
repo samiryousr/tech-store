@@ -1,27 +1,70 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import Breadcrumb from "../Common/Breadcrumb";
-
 import SingleGridItem from "../Shop/SingleGridItem";
 import SingleListItem from "../Shop/SingleListItem";
-import CustomSelect from "../ShopWithSidebar/CustomSelect";
-
+import CustomSelect, { Option } from "../ShopWithSidebar/CustomSelect";
 import { getShopData } from "../Shop/shopData";
 import { Product } from "@/types/product";
 
+const sortOptions: Option[] = [
+  { label: "Latest Products", value: "latest" },
+  { label: "Price: Low to High", value: "price_asc" },
+  { label: "Price: High to Low", value: "price_desc" },
+  { label: "Highest Rated", value: "rating" },
+  { label: "Biggest Discount", value: "discount" },
+];
+
+const ITEMS_PER_PAGE = 12;
+
 const ShopWithoutSidebar = () => {
-  const [productStyle, setProductStyle] = useState("grid");
+  const [productStyle, setProductStyle] = useState<"grid" | "list">("grid");
   const [shopData, setShopData] = useState<Product[]>([]);
+  const [selectedSort, setSelectedSort] = useState<Option>(sortOptions[0]);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    getShopData().then((data) => setShopData(data.products));
+    getShopData().then((data) => setShopData(data.products || []));
   }, []);
 
-  const options = [
-    { label: "Latest Products", value: "0" },
-    { label: "Best Selling", value: "1" },
-    { label: "Old Products", value: "2" },
-  ];
+  const sortedProducts = useMemo(() => {
+    const list = [...shopData];
+    switch (selectedSort.value) {
+      case "price_asc":
+        return list.sort((a, b) => (a.discountedPrice || a.price) - (b.discountedPrice || b.price));
+      case "price_desc":
+        return list.sort((a, b) => (b.discountedPrice || b.price) - (a.discountedPrice || a.price));
+      case "rating":
+        return list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      case "discount":
+        return list.sort((a, b) => {
+          const discA = a.discountedPrice ? (a.price - a.discountedPrice) / a.price : 0;
+          const discB = b.discountedPrice ? (b.price - b.discountedPrice) / b.price : 0;
+          return discB - discA;
+        });
+      case "latest":
+      default:
+        return list.sort((a, b) => (b.id || 0) - (a.id || 0));
+    }
+  }, [shopData, selectedSort]);
+
+  const totalPages = Math.ceil(sortedProducts.length / ITEMS_PER_PAGE) || 1;
+  const validPage = Math.min(currentPage, totalPages);
+
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (validPage - 1) * ITEMS_PER_PAGE;
+    return sortedProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [sortedProducts, validPage]);
+
+  const startCount = sortedProducts.length === 0 ? 0 : (validPage - 1) * ITEMS_PER_PAGE + 1;
+  const endCount = Math.min(validPage * ITEMS_PER_PAGE, sortedProducts.length);
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      window.scrollTo({ top: 250, behavior: "smooth" });
+    }
+  };
 
   return (
     <>
@@ -32,21 +75,32 @@ const ShopWithoutSidebar = () => {
       <section className="overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28 bg-[#f3f4f6]">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
           <div className="flex gap-7.5">
-            {/* // <!-- Content Start --> */}
             <div className="w-full">
               <div className="rounded-lg bg-white shadow-1 pl-3 pr-2.5 py-2.5 mb-6">
-                <div className="flex items-center justify-between">
-                  {/* <!-- top bar left --> */}
+                <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-4">
-                    <CustomSelect options={options} />
+                    <CustomSelect
+                      options={sortOptions}
+                      selected={selectedSort}
+                      onChange={(opt) => {
+                        setSelectedSort(opt);
+                        setCurrentPage(1);
+                      }}
+                    />
 
-                    <p>
-                      Showing <span className="text-dark">9 of 50</span>{" "}
+                    <p className="text-sm sm:text-base text-body">
+                      Showing{" "}
+                      <span className="text-dark font-medium">
+                        {startCount} - {endCount}
+                      </span>{" "}
+                      of{" "}
+                      <span className="text-dark font-semibold">
+                        {sortedProducts.length}
+                      </span>{" "}
                       Products
                     </p>
                   </div>
 
-                  {/* <!-- top bar right --> */}
                   <div className="flex items-center gap-2.5">
                     <button
                       onClick={() => setProductStyle("grid")}
@@ -80,7 +134,7 @@ const ShopWithoutSidebar = () => {
                         <path
                           fillRule="evenodd"
                           clipRule="evenodd"
-                          d="M4.836 9.5625H4.914C5.58786 9.56248 6.14978 9.56246 6.59586 9.62244C7.06671 9.68574 7.49181 9.82499 7.83341 10.1666C8.17501 10.5082 8.31427 10.9333 8.37757 11.4041C8.43754 11.8502 8.43752 12.4121 8.4375 13.086V13.164C8.43752 13.8378 8.43754 14.3998 8.37757 14.8459C8.31427 15.3167 8.17501 15.7418 7.83341 16.0834C7.49181 16.425 7.06671 16.5643 6.59586 16.6276C6.14979 16.6875 5.58789 16.6875 4.91405 16.6875H4.83601C4.16217 16.6875 3.60022 16.6875 3.15414 16.6276C2.6833 16.5643 2.2582 16.425 1.91659 16.0834C1.57499 15.7418 1.43574 15.3167 1.37244 14.8459C1.31246 14.3998 1.31248 13.8379 1.3125 13.164V13.086C1.31248 12.4122 1.31246 11.8502 1.37244 11.4041C1.43574 10.9333 1.57499 10.5082 1.91659 10.1666C2.2582 9.82499 2.6833 9.68574 3.15414 9.62244C3.60023 9.56246 4.16214 9.56248 4.836 9.5625ZM3.30405 10.7374C2.95795 10.7839 2.80983 10.8644 2.71209 10.9621C2.61435 11.0598 2.53394 11.208 2.4874 11.554C2.4387 11.9163 2.4375 12.402 2.4375 13.125C2.4375 13.848 2.4387 14.3337 2.4874 14.696C2.53394 15.0421 2.61435 15.1902 2.71209 15.2879C2.80983 15.3857 2.95795 15.4661 3.30405 15.5126C3.66632 15.5613 4.15199 15.5625 4.875 15.5625C5.59801 15.5625 6.08368 15.5613 6.44596 15.5126C6.79205 15.4661 6.94018 15.3857 7.03791 15.2879C7.13565 15.1902 7.21607 15.0421 7.2626 14.696C7.31131 14.3337 7.3125 13.848 7.3125 13.125C7.3125 12.402 7.31131 11.9163 7.2626 11.554C7.21607 11.208 7.13565 11.0598 7.03791 10.9621C6.94018 10.8644 6.79205 10.7839 6.44596 10.7374C6.08368 10.6887 5.59801 10.6875 4.875 10.6875C4.15199 10.6875 3.66632 10.6887 3.30405 10.7374Z"
+                          d="M4.836 9.5625H4.914C5.58786 9.56248 6.14978 9.56246 6.59586 9.62244C7.06671 9.68574 7.49181 9.82499 7.83341 10.1666C8.17501 10.5082 8.31427 10.9333 8.37757 11.4041C8.43754 11.8502 8.43752 12.4121 8.4375 13.086V13.164C8.43752 13.8378 8.43754 14.3998 8.37757 14.8459C8.31427 15.3167 8.17501 15.7418 7.83341 16.0834C7.49181 16.425 7.06671 16.5643 6.59586 16.6276C6.14979 16.6875 5.58789 16.6875 4.91405 16.6875H4.83601C4.16217 16.6875 3.60022 16.6875 3.15414 16.6276C2.6833 16.5643 2.2582 16.425 1.91659 16.0834C1.57499 15.7418 1.43574 15.3167 1.37244 14.8459C1.31246 14.3998 1.31248 13.8379 1.3125 13.164V13.086C1.31248 12.4122 1.31246 11.8502 1.37244 11.4041C1.43574 10.9333 1.57499 10.5082 1.91659 10.1666C2.2582 9.82499 2.6833 9.68574 3.15414 9.62244C3.60023 9.56246 4.16214 9.56248 4.836 9.5625ZM3.30405 10.7374C2.95795 10.7839 2.80983 10.8644 2.71209 10.9621C2.61435 11.0598 2.53394 11.208 2.4874 11.554C2.4387 11.9163 2.4375 12.402 2.4375 13.125C2.4375 13.848 2.4387 14.3337 2.4874 14.696C2.53394 15.0421 2.61435 15.1902 2.71209 15.2879C2.80983 15.3857 2.95795 15.4661 3.30405 15.5126C3.66632 15.5613 4.15199 15.5625 4.875 15.5625C4.15199 15.5625 6.08368 15.5613 6.44596 15.5126C6.79205 15.4661 6.94018 15.3857 7.03791 15.2879C7.13565 15.1902 7.21607 15.0421 7.2626 14.696C7.31131 14.3337 7.3125 13.848 7.3125 13.125C7.3125 12.402 7.31131 11.9163 7.2626 11.554C7.21607 11.208 7.13565 11.0598 7.03791 10.9621C6.94018 10.8644 6.79205 10.7839 6.44596 10.7374C6.08368 10.6887 5.59801 10.6875 4.875 10.6875C4.15199 10.6875 3.66632 10.6887 3.30405 10.7374Z"
                           fill=""
                         />
                         <path
@@ -127,143 +181,108 @@ const ShopWithoutSidebar = () => {
                 </div>
               </div>
 
-              {/* <!-- Products Grid Tab Content Start --> */}
-              <div
-                className={`${
-                  productStyle === "grid"
-                    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-7.5 gap-y-9"
-                    : "flex flex-col gap-7.5"
-                }`}
-              >
-                {shopData.map((item, key) =>
-                  productStyle === "grid" ? (
-                    <SingleGridItem item={item} key={key} />
-                  ) : (
-                    <SingleListItem item={item} key={key} />
-                  )
-                )}
-              </div>
-              {/* <!-- Products Grid Tab Content End --> */}
+              {/* <!-- Products Grid/List Tab Content Start --> */}
+              {paginatedProducts.length > 0 ? (
+                <div
+                  className={`${
+                    productStyle === "grid"
+                      ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-7.5 gap-y-9"
+                      : "flex flex-col gap-7.5"
+                  }`}
+                >
+                  {paginatedProducts.map((item) =>
+                    productStyle === "grid" ? (
+                      <SingleGridItem item={item} key={item.id} />
+                    ) : (
+                      <SingleListItem item={item} key={item.id} />
+                    )
+                  )}
+                </div>
+              ) : (
+                <div className="bg-white rounded-lg shadow-1 p-12 text-center">
+                  <p className="text-xl font-medium text-dark mb-2">
+                    No products found
+                  </p>
+                </div>
+              )}
+              {/* <!-- Products Tab Content End --> */}
 
               {/* <!-- Products Pagination Start --> */}
-              <div className="flex justify-center mt-15">
-                <div className="bg-white shadow-1 rounded-md p-2">
-                  <ul className="flex items-center">
-                    <li>
-                      <button
-                        id="paginationLeft"
-                        aria-label="button for pagination left"
-                        type="button"
-                        disabled
-                        className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px disabled:text-gray-4"
-                      >
-                        <svg
-                          className="fill-current"
-                          width="18"
-                          height="18"
-                          viewBox="0 0 18 18"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
+              {totalPages > 1 && (
+                <div className="flex justify-center mt-15">
+                  <div className="bg-white shadow-1 rounded-md p-2">
+                    <ul className="flex items-center gap-1">
+                      <li>
+                        <button
+                          id="paginationLeft"
+                          aria-label="button for previous page"
+                          type="button"
+                          disabled={validPage <= 1}
+                          onClick={() => handlePageChange(validPage - 1)}
+                          className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-current hover:text-white hover:bg-blue"
                         >
-                          <path
-                            d="M12.1782 16.1156C12.0095 16.1156 11.8407 16.0594 11.7282 15.9187L5.37197 9.45C5.11885 9.19687 5.11885 8.80312 5.37197 8.55L11.7282 2.08125C11.9813 1.82812 12.3751 1.82812 12.6282 2.08125C12.8813 2.33437 12.8813 2.72812 12.6282 2.98125L6.72197 9L12.6563 15.0187C12.9095 15.2719 12.9095 15.6656 12.6563 15.9187C12.4876 16.0312 12.347 16.1156 12.1782 16.1156Z"
-                            fill=""
-                          />
-                        </svg>
-                      </button>
-                    </li>
+                          <svg
+                            className="fill-current"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 18 18"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M12.1782 16.1156C12.0095 16.1156 11.8407 16.0594 11.7282 15.9187L5.37197 9.45C5.11885 9.19687 5.11885 8.80312 5.37197 8.55L11.7282 2.08125C11.9813 1.82812 12.3751 1.82812 12.6282 2.08125C12.8813 2.33437 12.8813 2.72812 12.6282 2.98125L6.72197 9L12.6563 15.0187C12.9095 15.2719 12.9095 15.6656 12.6563 15.9187C12.4876 16.0312 12.347 16.1156 12.1782 16.1156Z"
+                              fill=""
+                            />
+                          </svg>
+                        </button>
+                      </li>
 
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] bg-blue text-white hover:text-white hover:bg-blue"
-                      >
-                        1
-                      </a>
-                    </li>
+                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                        <li key={pageNum}>
+                          <button
+                            type="button"
+                            onClick={() => handlePageChange(pageNum)}
+                            className={`flex py-1.5 px-3.5 duration-200 rounded-[3px] text-sm font-medium ${
+                              validPage === pageNum
+                                ? "bg-blue text-white"
+                                : "text-dark hover:text-white hover:bg-blue"
+                            }`}
+                          >
+                            {pageNum}
+                          </button>
+                        </li>
+                      ))}
 
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        2
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        3
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        4
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        5
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        ...
-                      </a>
-                    </li>
-
-                    <li>
-                      <a
-                        href="#"
-                        className="flex py-1.5 px-3.5 duration-200 rounded-[3px] hover:text-white hover:bg-blue"
-                      >
-                        10
-                      </a>
-                    </li>
-
-                    <li>
-                      <button
-                        id="paginationLeft"
-                        aria-label="button for pagination left"
-                        type="button"
-                        className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] hover:text-white hover:bg-blue disabled:text-gray-4"
-                      >
-                        <svg
-                          className="fill-current"
-                          width="18"
-                          height="18"
-                          viewBox="0 0 18 18"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
+                      <li>
+                        <button
+                          id="paginationRight"
+                          aria-label="button for next page"
+                          type="button"
+                          disabled={validPage >= totalPages}
+                          onClick={() => handlePageChange(validPage + 1)}
+                          className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-current hover:text-white hover:bg-blue"
                         >
-                          <path
-                            d="M5.82197 16.1156C5.65322 16.1156 5.5126 16.0594 5.37197 15.9469C5.11885 15.6937 5.11885 15.3 5.37197 15.0469L11.2782 9L5.37197 2.98125C5.11885 2.72812 5.11885 2.33437 5.37197 2.08125C5.6251 1.82812 6.01885 1.82812 6.27197 2.08125L12.6282 8.55C12.8813 8.80312 12.8813 9.19687 12.6282 9.45L6.27197 15.9187C6.15947 16.0312 5.99072 16.1156 5.82197 16.1156Z"
-                            fill=""
-                          />
-                        </svg>
-                      </button>
-                    </li>
-                  </ul>
+                          <svg
+                            className="fill-current"
+                            width="18"
+                            height="18"
+                            viewBox="0 0 18 18"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M5.82197 16.1156C5.65322 16.1156 5.5126 16.0594 5.37197 15.9469C5.11885 15.6937 5.11885 15.3 5.37197 15.0469L11.2782 9L5.37197 2.98125C5.11885 2.72812 5.11885 2.33437 5.37197 2.08125C5.6251 1.82812 6.01885 1.82812 6.27197 2.08125L12.6282 8.55C12.8813 8.80312 12.8813 9.19687 12.6282 9.45L6.27197 15.9187C6.15947 16.0312 5.99072 16.1156 5.82197 16.1156Z"
+                              fill=""
+                            />
+                          </svg>
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
                 </div>
-              </div>
+              )}
               {/* <!-- Products Pagination End --> */}
             </div>
-            {/* // <!-- Content End --> */}
           </div>
         </div>
       </section>

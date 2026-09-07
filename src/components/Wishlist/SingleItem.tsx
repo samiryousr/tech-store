@@ -23,6 +23,13 @@ const SingleItem = ({ item }) => {
     );
   };
 
+  const itemImage =
+    item.imgs?.thumbnails?.[0] ||
+    item.imgs?.previews?.[0] ||
+    item.thumbnail ||
+    (item.images && item.images[0]) ||
+    "/images/products/product-01.png";
+
   return (
     <div className="flex items-center border-t border-gray-3 py-5 px-10">
       <div className="min-w-[83px]">
@@ -57,7 +64,7 @@ const SingleItem = ({ item }) => {
         <div className="flex items-center justify-between gap-5">
           <div className="w-full flex items-center gap-5.5">
             <div className="flex items-center justify-center rounded-[5px] bg-gray-2 max-w-[80px] w-full h-17.5">
-              <Image src={item.imgs?.thumbnails[0]} alt="product" width={200} height={200} />
+              <Image src={itemImage} alt={item.title || "product"} width={200} height={200} />
             </div>
 
             <div>

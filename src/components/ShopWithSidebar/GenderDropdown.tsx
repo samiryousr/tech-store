@@ -1,23 +1,42 @@
 "use client";
 import React, { useState } from "react";
 
-const GenderItem = ({ category }) => {
-  const [selected, setSelected] = useState(false);
+interface GenderItemProps {
+  name: string;
+  products?: number;
+}
+
+interface GenderDropdownProps {
+  genders: GenderItemProps[];
+  selectedGender?: string;
+  onSelectGender?: (genderName: string) => void;
+}
+
+const GenderItem = ({
+  category,
+  isSelected,
+  onClick,
+}: {
+  category: GenderItemProps;
+  isSelected: boolean;
+  onClick: () => void;
+}) => {
   return (
     <button
+      type="button"
       className={`${
-        selected && "text-blue"
-      } group flex items-center justify-between ease-out duration-200 hover:text-blue `}
-      onClick={() => setSelected(!selected)}
+        isSelected ? "text-blue font-medium" : "text-dark"
+      } group flex items-center justify-between ease-out duration-200 hover:text-blue w-full text-left`}
+      onClick={onClick}
     >
       <div className="flex items-center gap-2">
         <div
           className={`cursor-pointer flex items-center justify-center rounded w-4 h-4 border ${
-            selected ? "border-blue bg-blue" : "bg-white border-gray-3"
+            isSelected ? "border-blue bg-blue" : "bg-white border-gray-3"
           }`}
         >
           <svg
-            className={selected ? "block" : "hidden"}
+            className={isSelected ? "block" : "hidden"}
             width="10"
             height="10"
             viewBox="0 0 10 10"
@@ -37,31 +56,37 @@ const GenderItem = ({ category }) => {
         <span>{category.name}</span>
       </div>
 
-      <span
-        className={`${
-          selected ? "text-white bg-blue" : "bg-gray-2"
-        } inline-flex rounded-[30px] text-custom-xs px-2 ease-out duration-200 group-hover:text-white group-hover:bg-blue`}
-      >
-        {category.products}
-      </span>
+      {typeof category.products === "number" && (
+        <span
+          className={`${
+            isSelected ? "text-white bg-blue" : "bg-gray-2 text-dark-4"
+          } inline-flex rounded-[30px] text-custom-xs px-2 py-0.5 ease-out duration-200 group-hover:text-white group-hover:bg-blue`}
+        >
+          {category.products}
+        </span>
+      )}
     </button>
   );
 };
 
-const GenderDropdown = ({ genders }) => {
+const GenderDropdown = ({
+  genders,
+  selectedGender,
+  onSelectGender,
+}: GenderDropdownProps) => {
   const [toggleDropdown, setToggleDropdown] = useState(true);
 
   return (
     <div className="bg-white shadow-1 rounded-lg">
       <div
         onClick={() => setToggleDropdown(!toggleDropdown)}
-        className={`cursor-pointer flex items-center justify-between py-3 pl-6 pr-5.5 ${
+        className={`cursor-pointer flex items-center justify-between py-3 pl-6 pr-5.5 select-none ${
           toggleDropdown && "shadow-filter"
         }`}
       >
-        <p className="text-dark">Gender</p>
+        <p className="text-dark font-medium">Gender / Collection</p>
         <button
-          onClick={() => setToggleDropdown(!toggleDropdown)}
+          type="button"
           aria-label="button for gender dropdown"
           className={`text-dark ease-out duration-200 ${
             toggleDropdown && "rotate-180"
@@ -85,15 +110,23 @@ const GenderDropdown = ({ genders }) => {
         </button>
       </div>
 
-      {/* <!-- dropdown menu --> */}
+      {/* dropdown menu */}
       <div
-        className={`flex-col gap-3 py-6 pl-6 pr-5.5 ${
+        className={`flex-col gap-3 py-5 pl-6 pr-5.5 ${
           toggleDropdown ? "flex" : "hidden"
         }`}
       >
-        {genders.map((gender, key) => (
-          <GenderItem key={key} category={gender} />
-        ))}
+        {genders.map((category, key) => {
+          const isSelected = selectedGender === category.name;
+          return (
+            <GenderItem
+              key={key}
+              category={category}
+              isSelected={isSelected}
+              onClick={() => onSelectGender?.(category.name)}
+            />
+          );
+        })}
       </div>
     </div>
   );

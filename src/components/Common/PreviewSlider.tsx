@@ -1,6 +1,6 @@
 "use client";
+import React, { useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { useCallback, useRef } from "react";
 import "swiper/css/navigation";
 import "swiper/css";
 import Image from "next/image";
@@ -9,113 +9,262 @@ import { usePreviewSlider } from "@/app/context/PreviewSliderContext";
 import { useAppSelector } from "@/redux/store";
 
 const PreviewSliderModal = () => {
-  const { closePreviewModal, isModalPreviewOpen } = usePreviewSlider();
+  const { closePreviewModal, isModalPreviewOpen, activeImageIndex } =
+    usePreviewSlider();
 
-  const data = useAppSelector((state) => state.productDetailsReducer.value);
+  const reduxProduct = useAppSelector(
+    (state) => state.productDetailsReducer.value
+  );
 
-  const sliderRef = useRef(null);
+  const [localProduct, setLocalProduct] = useState<any>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const swiperRef = useRef<any>(null);
 
-  const handlePrev = useCallback(() => {
-    if (!sliderRef.current) return;
-    sliderRef.current.swiper.slidePrev();
-  }, []);
+  // Fallback to localStorage if redux store is empty
+  useEffect(() => {
+    if (isModalPreviewOpen) {
+      try {
+        const stored =
+          typeof window !== "undefined"
+            ? localStorage.getItem("productDetails")
+            : null;
+        if (stored) {
+          setLocalProduct(JSON.parse(stored));
+        }
+      } catch (e) {}
+    }
+  }, [isModalPreviewOpen]);
 
-  const handleNext = useCallback(() => {
-    if (!sliderRef.current) return;
-    sliderRef.current.swiper.slideNext();
-  }, []);
+  // Handle ESC key to close
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closePreviewModal();
+      }
+    };
+
+    if (isModalPreviewOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "unset";
+    };
+  }, [isModalPreviewOpen, closePreviewModal]);
+
+  const product =
+    reduxProduct?.title || reduxProduct?.images?.length || reduxProduct?.thumbnail
+      ? reduxProduct
+      : localProduct || reduxProduct;
+
+  // Collect and deduplicate all valid product images
+  const rawImages: string[] = [];
+
+  if (Array.isArray(product?.imgs?.previews) && product.imgs.previews.length > 0) {
+    rawImages.push(...product.imgs.previews);
+  } else if (Array.isArray(product?.images) && product.images.length > 0) {
+    rawImages.push(...product.images);
+  } else if (
+    Array.isArray(product?.imgs?.thumbnails) &&
+    product.imgs.thumbnails.length > 0
+  ) {
+    rawImages.push(...product.imgs.thumbnails);
+  }
+
+  if (product?.thumbnail && !rawImages.includes(product.thumbnail)) {
+    rawImages.unshift(product.thumbnail);
+  }
+
+  const displayImages = Array.from(
+    new Set(rawImages.filter((src) => typeof src === "string" && src.trim() !== ""))
+  );
+
+  const finalImages =
+    displayImages.length > 0
+      ? displayImages
+      : ["/images/products/product-01.png"];
+
+  // When modal opens or activeImageIndex changes, move swiper to that slide
+  useEffect(() => {
+    if (isModalPreviewOpen && swiperRef.current) {
+      const targetIndex =
+        typeof activeImageIndex === "number" &&
+        activeImageIndex >= 0 &&
+        activeImageIndex < finalImages.length
+          ? activeImageIndex
+          : 0;
+      swiperRef.current.slideTo(targetIndex, 0);
+      setCurrentSlide(targetIndex);
+    }
+  }, [isModalPreviewOpen, activeImageIndex, finalImages.length]);
+
+  const handlePrev = () => {
+    if (swiperRef.current) {
+      swiperRef.current.slidePrev();
+    }
+  };
+
+  const handleNext = () => {
+    if (swiperRef.current) {
+      swiperRef.current.slideNext();
+    }
+  };
+
+  if (!isModalPreviewOpen) return null;
 
   return (
     <div
-      className={`preview-slider w-full h-screen  z-999999 inset-0 flex justify-center items-center bg-[#000000F2] bg-opacity-70 ${isModalPreviewOpen ? "fixed" : "hidden"
-        }`}
+      className="fixed inset-0 w-full h-screen z-999999 flex flex-col justify-center items-center bg-white select-none"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          closePreviewModal();
+        }
+      }}
     >
-      <button
-        onClick={() => closePreviewModal()}
-        aria-label="button for close modal"
-        className="absolute top-0 right-0 sm:top-6 sm:right-6 flex items-center justify-center w-10 h-10 rounded-full ease-in duration-150 text-white hover:text-meta-5 z-10"
-      >
-        <svg
-          className="fill-current"
-          width="36"
-          height="36"
-          viewBox="0 0 26 26"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            fillRule="evenodd"
-            clipRule="evenodd"
-            d="M14.3108 13L19.2291 8.08167C19.5866 7.72417 19.5866 7.12833 19.2291 6.77083C19.0543 6.59895 18.8189 6.50262 18.5737 6.50262C18.3285 6.50262 18.0932 6.59895 17.9183 6.77083L13 11.6892L8.08164 6.77083C7.90679 6.59895 7.67142 6.50262 7.42623 6.50262C7.18104 6.50262 6.94566 6.59895 6.77081 6.77083C6.41331 7.12833 6.41331 7.72417 6.77081 8.08167L11.6891 13L6.77081 17.9183C6.41331 18.2758 6.41331 18.8717 6.77081 19.2292C7.12831 19.5867 7.72414 19.5867 8.08164 19.2292L13 14.3108L17.9183 19.2292C18.2758 19.5867 18.8716 19.5867 19.2291 19.2292C19.5866 18.8717 19.5866 18.2758 19.2291 17.9183L14.3108 13Z"
-            fill=""
-          />
-        </svg>
-      </button>
+      {/* Top Header Bar */}
+      <div className="absolute top-0 left-0 w-full p-4 sm:p-6 flex items-center justify-between z-30 pointer-events-none border-b border-gray-2 bg-white">
+        <div className="pointer-events-auto max-w-[70%]">
+          {product?.title && (
+            <h3 className="text-dark text-base sm:text-lg font-medium truncate">
+              {product.title}
+            </h3>
+          )}
+          {finalImages.length > 1 && (
+            <p className="text-dark-4 text-xs sm:text-sm mt-0.5 font-medium">
+              {currentSlide + 1} / {finalImages.length}
+            </p>
+          )}
+        </div>
 
-      <div>
+        {/* Close Button */}
         <button
-          className="rotate-180 absolute left-100 p-5 cursor-pointer z-10 "
-          onClick={handlePrev}
+          onClick={() => closePreviewModal()}
+          aria-label="close zoom modal"
+          className="pointer-events-auto flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gray-2 hover:bg-gray-3 text-dark hover:text-blue transition-all duration-150 shadow-1"
         >
           <svg
-            width="36"
-            height="36"
-            viewBox="0 0 26 26"
+            className="fill-current"
+            width="22"
+            height="22"
+            viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
             <path
               fillRule="evenodd"
               clipRule="evenodd"
-              d="M14.5918 5.92548C14.9091 5.60817 15.4236 5.60817 15.7409 5.92548L22.2409 12.4255C22.5582 12.7428 22.5582 13.2572 22.2409 13.5745L15.7409 20.0745C15.4236 20.3918 14.9091 20.3918 14.5918 20.0745C14.2745 19.7572 14.2745 19.2428 14.5918 18.9255L19.7048 13.8125H4.33301C3.88428 13.8125 3.52051 13.4487 3.52051 13C3.52051 12.5513 3.88428 12.1875 4.33301 12.1875H19.7048L14.5918 7.07452C14.2745 6.75722 14.2745 6.24278 14.5918 5.92548Z"
-              fill="#FDFDFD"
-            />
-          </svg>
-        </button>
-
-        <button
-          className="absolute right-100 p-5 cursor-pointer z-10"
-          onClick={handleNext}
-        >
-          <svg
-            width="36"
-            height="36"
-            viewBox="0 0 26 26"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M14.5918 5.92548C14.9091 5.60817 15.4236 5.60817 15.7409 5.92548L22.2409 12.4255C22.5582 12.7428 22.5582 13.2572 22.2409 13.5745L15.7409 20.0745C15.4236 20.3918 14.9091 20.3918 14.5918 20.0745C14.2745 19.7572 14.2745 19.2428 14.5918 18.9255L19.7048 13.8125H4.33301C3.88428 13.8125 3.52051 13.4487 3.52051 13C3.52051 12.5513 3.88428 12.1875 4.33301 12.1875H19.7048L14.5918 7.07452C14.2745 6.75722 14.2745 6.24278 14.5918 5.92548Z"
-              fill="#FDFDFD"
+              d="M18.707 5.293a1 1 0 010 1.414L13.414 12l5.293 5.293a1 1 0 01-1.414 1.414L12 13.414l-5.293 5.293a1 1 0 01-1.414-1.414L10.586 12 5.293 6.707a1 1 0 011.414-1.414L12 10.586l5.293-5.293a1 1 0 011.414 0z"
             />
           </svg>
         </button>
       </div>
 
-      <Swiper ref={sliderRef} slidesPerView={1} spaceBetween={20}>
-        <SwiperSlide>
-          <div className="flex justify-center items-center">
-            <Image
-              src={"/images/products/product-2-bg-1.png"}
-              alt={"product image"}
-              width={450}
-              height={450}
-            />
-          </div>
-        </SwiperSlide>
-        <SwiperSlide>
-          <div className="flex justify-center items-center">
-            <Image
-              src={"/images/products/product-2-bg-1.png"}
-              alt={"product image"}
-              width={450}
-              height={450}
-            />
-          </div>
-        </SwiperSlide>
-      </Swiper>
+      {/* Navigation Arrows */}
+      {finalImages.length > 1 && (
+        <>
+          <button
+            onClick={handlePrev}
+            aria-label="Previous image"
+            className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 flex items-center justify-center w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white border border-gray-3 hover:border-blue text-dark hover:bg-blue hover:text-white cursor-pointer z-30 transition-all shadow-2"
+          >
+            <svg
+              className="fill-current"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M15.707 19.707a1 1 0 01-1.414 0l-7-7a1 1 0 010-1.414l7-7a1 1 0 011.414 1.414L9.414 12l6.293 6.293a1 1 0 010 1.414z"
+              />
+            </svg>
+          </button>
+
+          <button
+            onClick={handleNext}
+            aria-label="Next image"
+            className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 flex items-center justify-center w-11 h-11 sm:w-13 sm:h-13 rounded-full bg-white border border-gray-3 hover:border-blue text-dark hover:bg-blue hover:text-white cursor-pointer z-30 transition-all shadow-2"
+          >
+            <svg
+              className="fill-current"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M8.293 4.293a1 1 0 011.414 0l7 7a1 1 0 010 1.414l-7 7a1 1 0 01-1.414-1.414L14.586 12 8.293 5.707a1 1 0 010-1.414z"
+              />
+            </svg>
+          </button>
+        </>
+      )}
+
+      {/* Main Image Slider */}
+      <div className="w-full max-w-[900px] h-[70vh] max-h-[700px] px-6 sm:px-16 flex items-center justify-center mt-12 mb-14">
+        <Swiper
+          onSwiper={(swiper) => {
+            swiperRef.current = swiper;
+          }}
+          onSlideChange={(swiper) => {
+            setCurrentSlide(swiper.activeIndex);
+          }}
+          slidesPerView={1}
+          spaceBetween={30}
+          className="w-full h-full"
+        >
+          {finalImages.map((src, index) => (
+            <SwiperSlide key={index} className="flex items-center justify-center">
+              <div className="relative w-full h-full flex items-center justify-center p-2">
+                <Image
+                  src={src}
+                  alt={product?.title || `product preview ${index + 1}`}
+                  fill
+                  sizes="(max-width: 768px) 95vw, 850px"
+                  className="object-contain"
+                  priority={index === (activeImageIndex || 0)}
+                />
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
+      </div>
+
+      {/* Thumbnail Bar at bottom if multiple images */}
+      {finalImages.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 max-w-[90%] overflow-x-auto no-scrollbar py-2 px-3 rounded-full bg-gray-1 border border-gray-3 shadow-1 z-30">
+          {finalImages.map((thumbSrc, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                swiperRef.current?.slideTo(index);
+                setCurrentSlide(index);
+              }}
+              className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 bg-white ${
+                currentSlide === index
+                  ? "border-blue scale-105 shadow-md"
+                  : "border-gray-3 opacity-70 hover:opacity-100"
+              }`}
+            >
+              <Image
+                src={thumbSrc}
+                alt={`thumbnail ${index + 1}`}
+                fill
+                sizes="48px"
+                className="object-contain p-1"
+              />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

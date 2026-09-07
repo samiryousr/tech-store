@@ -1,13 +1,30 @@
 import React, { useState, useEffect, useRef } from "react";
 
-const CustomSelect = ({ options }) => {
+export interface Option {
+  label: string;
+  value: string;
+}
+
+interface CustomSelectProps {
+  options: Option[];
+  selected?: Option;
+  onChange?: (option: Option) => void;
+}
+
+const CustomSelect = ({ options, selected, onChange }: CustomSelectProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(options[0]);
-  const selectRef = useRef(null);
+  const [selectedOption, setSelectedOption] = useState(selected || options[0]);
+  const selectRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (selected) {
+      setSelectedOption(selected);
+    }
+  }, [selected]);
 
   // Function to close the dropdown when a click occurs outside the component
-  const handleClickOutside = (event) => {
-    if (selectRef.current && !selectRef.current.contains(event.target)) {
+  const handleClickOutside = (event: MouseEvent) => {
+    if (selectRef.current && !selectRef.current.contains(event.target as Node)) {
       setIsOpen(false);
     }
   };
@@ -26,9 +43,10 @@ const CustomSelect = ({ options }) => {
     setIsOpen(!isOpen);
   };
 
-  const handleOptionClick = (option) => {
+  const handleOptionClick = (option: Option) => {
     setSelectedOption(option);
-    toggleDropdown();
+    onChange?.(option);
+    setIsOpen(false);
   };
 
   return (
@@ -37,20 +55,20 @@ const CustomSelect = ({ options }) => {
       ref={selectRef}
     >
       <div
-        className={`select-selected whitespace-nowrap ${
+        className={`select-selected whitespace-nowrap cursor-pointer ${
           isOpen ? "select-arrow-active" : ""
         }`}
         onClick={toggleDropdown}
       >
-        {selectedOption.label}
+        {selectedOption?.label || options[0]?.label}
       </div>
       <div className={`select-items ${isOpen ? "" : "select-hide"}`}>
-        {options.slice(1).map((option, index) => (
+        {options.map((option, index) => (
           <div
             key={index}
             onClick={() => handleOptionClick(option)}
-            className={`select-item ${
-              selectedOption === option ? "same-as-selected" : ""
+            className={`select-item cursor-pointer ${
+              selectedOption?.value === option.value ? "same-as-selected font-medium text-blue" : ""
             }`}
           >
             {option.label}

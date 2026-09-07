@@ -2,23 +2,44 @@
 
 import { useState } from "react";
 
-const CategoryItem = ({ category }) => {
-  const [selected, setSelected] = useState(false);
+interface Category {
+  name: string;
+  products?: number;
+  isRefined?: boolean;
+}
+
+interface CategoryDropdownProps {
+  categories: Category[];
+  selectedCategory?: string;
+  selectedCategories?: string[];
+  onSelectCategory?: (categoryName: string) => void;
+}
+
+const CategoryItem = ({
+  category,
+  isSelected,
+  onClick,
+}: {
+  category: Category;
+  isSelected: boolean;
+  onClick: () => void;
+}) => {
   return (
     <button
+      type="button"
       className={`${
-        selected && "text-blue"
-      } group flex items-center justify-between ease-out duration-200 hover:text-blue `}
-      onClick={() => setSelected(!selected)}
+        isSelected ? "text-blue font-medium" : "text-dark"
+      } group flex items-center justify-between ease-out duration-200 hover:text-blue w-full text-left`}
+      onClick={onClick}
     >
       <div className="flex items-center gap-2">
         <div
           className={`cursor-pointer flex items-center justify-center rounded w-4 h-4 border ${
-            selected ? "border-blue bg-blue" : "bg-white border-gray-3"
+            isSelected ? "border-blue bg-blue" : "bg-white border-gray-3"
           }`}
         >
           <svg
-            className={selected ? "block" : "hidden"}
+            className={isSelected ? "block" : "hidden"}
             width="10"
             height="10"
             viewBox="0 0 10 10"
@@ -35,21 +56,28 @@ const CategoryItem = ({ category }) => {
           </svg>
         </div>
 
-        <span>{category.name}</span>
+        <span className="capitalize">{category.name}</span>
       </div>
 
-      <span
-        className={`${
-          selected ? "text-white bg-blue" : "bg-gray-2"
-        } inline-flex rounded-[30px] text-custom-xs px-2 ease-out duration-200 group-hover:text-white group-hover:bg-blue`}
-      >
-        {category.products}
-      </span>
+      {typeof category.products === "number" && (
+        <span
+          className={`${
+            isSelected ? "text-white bg-blue" : "bg-gray-2 text-dark-4"
+          } inline-flex rounded-[30px] text-custom-xs px-2 py-0.5 ease-out duration-200 group-hover:text-white group-hover:bg-blue`}
+        >
+          {category.products}
+        </span>
+      )}
     </button>
   );
 };
 
-const CategoryDropdown = ({ categories }) => {
+const CategoryDropdown = ({
+  categories,
+  selectedCategory,
+  selectedCategories,
+  onSelectCategory,
+}: CategoryDropdownProps) => {
   const [toggleDropdown, setToggleDropdown] = useState(true);
 
   return (
@@ -59,12 +87,13 @@ const CategoryDropdown = ({ categories }) => {
           e.preventDefault();
           setToggleDropdown(!toggleDropdown);
         }}
-        className={`cursor-pointer flex items-center justify-between py-3 pl-6 pr-5.5 ${
+        className={`cursor-pointer flex items-center justify-between py-3 pl-6 pr-5.5 select-none ${
           toggleDropdown && "shadow-filter"
         }`}
       >
-        <p className="text-dark">Category</p>
+        <p className="text-dark font-medium">Category</p>
         <button
+          type="button"
           aria-label="button for category dropdown"
           className={`text-dark ease-out duration-200 ${
             toggleDropdown && "rotate-180"
@@ -88,16 +117,25 @@ const CategoryDropdown = ({ categories }) => {
         </button>
       </div>
 
-      {/* dropdown && 'shadow-filter */}
-      {/* <!-- dropdown menu --> */}
+      {/* dropdown menu */}
       <div
-        className={`flex-col gap-3 py-6 pl-6 pr-5.5 ${
+        className={`flex-col gap-3 py-5 pl-6 pr-5.5 max-h-[350px] overflow-y-auto no-scrollbar ${
           toggleDropdown ? "flex" : "hidden"
         }`}
       >
-        {categories.map((category, key) => (
-          <CategoryItem key={key} category={category} />
-        ))}
+        {categories.map((category, key) => {
+          const isSelected = selectedCategories
+            ? selectedCategories.includes(category.name)
+            : selectedCategory === category.name;
+          return (
+            <CategoryItem
+              key={key}
+              category={category}
+              isSelected={Boolean(isSelected)}
+              onClick={() => onSelectCategory?.(category.name)}
+            />
+          );
+        })}
       </div>
     </div>
   );

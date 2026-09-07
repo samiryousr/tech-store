@@ -5,9 +5,18 @@ import Image from "next/image";
 import Newsletter from "../Common/Newsletter";
 import RecentlyViewdItems from "./RecentlyViewd";
 import { usePreviewSlider } from "@/app/context/PreviewSliderContext";
-import { useAppSelector } from "@/redux/store";
+import { AppDispatch, useAppSelector } from "@/redux/store";
+import { useDispatch } from "react-redux";
+import { addItemToCart } from "@/redux/features/cart-slice";
+import {
+  addItemToWishlist,
+  removeItemFromWishlist,
+} from "@/redux/features/wishlist-slice";
+import { updateproductDetails } from "@/redux/features/product-details";
+import { Product } from "@/types/product";
 
 const ShopDetails = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const [activeColor, setActiveColor] = useState("blue");
   const { openPreviewModal } = usePreviewSlider();
   const [previewImg, setPreviewImg] = useState(0);
@@ -75,20 +84,112 @@ const ShopDetails = () => {
 
   const colors = ["red", "blue", "orange", "pink", "purple"];
 
-  const alreadyExist = localStorage.getItem("productDetails");
   const productFromStorage = useAppSelector(
     (state) => state.productDetailsReducer.value
   );
+  const wishlistItems = useAppSelector((state) => state.wishlistReducer.items);
 
-  const product = alreadyExist ? JSON.parse(alreadyExist) : productFromStorage;
+  const [product, setProduct] = useState<Product>(productFromStorage);
+  const isInWishlist = wishlistItems.some((w) => w.id === product?.id);
 
   useEffect(() => {
-    localStorage.setItem("productDetails", JSON.stringify(product));
+    try {
+      const alreadyExist =
+        typeof window !== "undefined"
+          ? localStorage.getItem("productDetails")
+          : null;
+      if (alreadyExist) {
+        setProduct(JSON.parse(alreadyExist));
+      } else if (productFromStorage?.title) {
+        setProduct(productFromStorage);
+      }
+    } catch (e) {}
+  }, [productFromStorage]);
+
+  useEffect(() => {
+    if (product?.title && typeof window !== "undefined") {
+      try {
+        localStorage.setItem("productDetails", JSON.stringify(product));
+      } catch (e) {}
+    }
   }, [product]);
+
+  const productImage =
+    product?.thumbnail ||
+    (product?.images && product?.images[0]) ||
+    product?.imgs?.previews?.[0] ||
+    "/images/products/product-01.png";
+  const thumbnails =
+    product?.imgs?.thumbnails?.length
+      ? product.imgs.thumbnails
+      : product?.images?.length
+      ? product.images
+      : productImage
+      ? [productImage]
+      : [];
+  const previews =
+    product?.imgs?.previews?.length
+      ? product.imgs.previews
+      : product?.images?.length
+      ? product.images
+      : productImage
+      ? [productImage]
+      : [];
+  const discountedPrice =
+    product?.discountedPrice ??
+    (product?.discountPercentage && product?.price
+      ? Number(
+          (
+            product.price -
+            (product.price * product.discountPercentage) / 100
+          ).toFixed(2)
+        )
+      : product?.price ?? 0);
+  const activePreviewImage =
+    previews[previewImg] ||
+    thumbnails[previewImg] ||
+    productImage;
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    dispatch(
+      addItemToCart({
+        ...product,
+        imgs: { thumbnails, previews },
+        discountedPrice,
+        quantity,
+      })
+    );
+  };
+
+  const handleAddToWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!product?.id) return;
+    if (isInWishlist) {
+      dispatch(removeItemFromWishlist(product.id));
+    } else {
+      dispatch(
+        addItemToWishlist({
+          ...product,
+          imgs: { thumbnails, previews },
+          discountedPrice,
+          status: "available",
+          quantity,
+        })
+      );
+    }
+  };
 
   // pass the product here when you get the real data.
   const handlePreviewSlider = () => {
-    openPreviewModal();
+    dispatch(
+      updateproductDetails({
+        ...product,
+        imgs: { thumbnails, previews },
+        discountedPrice,
+      })
+    );
+    openPreviewModal(previewImg);
   };
 
   return (
@@ -127,12 +228,13 @@ const ShopDetails = () => {
                         </svg>
                       </button>
 
-                      {product.imgs?.previews?.[previewImg] && (
+                      {activePreviewImage && (
                         <Image
-                          src={product.imgs.previews[previewImg]}
+                          src={activePreviewImage}
                           alt="products-details"
                           width={400}
                           height={400}
+                          className="object-contain max-h-[400px]"
                         />
                       )}
                     </div>
@@ -140,7 +242,7 @@ const ShopDetails = () => {
 
                   {/* ?  &apos;border-blue &apos; :  &apos;border-transparent&apos; */}
                   <div className="flex flex-wrap sm:flex-nowrap gap-4.5 mt-6">
-                    {product.imgs?.thumbnails.map((item, key) => (
+                    {thumbnails.map((item, key) => (
                       <button
                         onClick={() => setPreviewImg(key)}
                         key={key}
@@ -152,8 +254,9 @@ const ShopDetails = () => {
                         <Image
                           width={50}
                           height={50}
-                          src={item}
+                          src={item || "/images/products/product-01.png"}
                           alt="thumbnail"
+                          className="aspect-square object-cover"
                         />
                       </button>
                     ))}
@@ -316,12 +419,14 @@ const ShopDetails = () => {
 
                   <h3 className="font-medium text-custom-1 mb-4.5">
                     <span className="text-sm sm:text-base text-dark">
-                      Price: ${product.price}
+                      Price: ${discountedPrice}
                     </span>
-                    <span className="line-through">
-                      {" "}
-                      ${product.discountedPrice}{" "}
-                    </span>
+                    {product?.price && product.price !== discountedPrice && (
+                      <span className="line-through ml-2 text-dark-4">
+                        {" "}
+                        ${product.price}{" "}
+                      </span>
+                    )}
                   </h3>
 
                   <ul className="flex flex-col gap-2">
@@ -664,16 +769,23 @@ const ShopDetails = () => {
                         </button>
                       </div>
 
-                      <a
-                        href="#"
+                      <button
+                        type="button"
+                        onClick={handleAddToCart}
                         className="inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark"
                       >
-                        Purchase Now
-                      </a>
+                        Add to Cart
+                      </button>
 
-                      <a
-                        href="#"
-                        className="flex items-center justify-center w-12 h-12 rounded-md border border-gray-3 ease-out duration-200 hover:text-white hover:bg-dark hover:border-transparent"
+                      <button
+                        type="button"
+                        onClick={handleAddToWishlist}
+                        aria-label="Add to Wishlist"
+                        className={`flex items-center justify-center w-12 h-12 rounded-md border ease-out duration-200 ${
+                          isInWishlist
+                            ? "border-[#DC3545] text-[#DC3545] bg-[#FFF5F5] hover:bg-[#DC3545] hover:text-white"
+                            : "border-gray-3 text-dark hover:text-white hover:bg-dark hover:border-transparent"
+                        }`}
                       >
                         <svg
                           className="fill-current"
@@ -683,14 +795,21 @@ const ShopDetails = () => {
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
                         >
-                          <path
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                            d="M5.62436 4.42423C3.96537 5.18256 2.75 6.98626 2.75 9.13713C2.75 11.3345 3.64922 13.0283 4.93829 14.4798C6.00072 15.6761 7.28684 16.6677 8.54113 17.6346C8.83904 17.8643 9.13515 18.0926 9.42605 18.3219C9.95208 18.7366 10.4213 19.1006 10.8736 19.3649C11.3261 19.6293 11.6904 19.75 12 19.75C12.3096 19.75 12.6739 19.6293 13.1264 19.3649C13.5787 19.1006 14.0479 18.7366 14.574 18.3219C14.8649 18.0926 15.161 17.8643 15.4589 17.6346C16.7132 16.6677 17.9993 15.6761 19.0617 14.4798C20.3508 13.0283 21.25 11.3345 21.25 9.13713C21.25 6.98626 20.0346 5.18256 18.3756 4.42423C16.7639 3.68751 14.5983 3.88261 12.5404 6.02077C12.399 6.16766 12.2039 6.25067 12 6.25067C11.7961 6.25067 11.601 6.16766 11.4596 6.02077C9.40166 3.88261 7.23607 3.68751 5.62436 4.42423ZM12 4.45885C9.68795 2.39027 7.09896 2.1009 5.00076 3.05999C2.78471 4.07296 1.25 6.42506 1.25 9.13713C1.25 11.8027 2.3605 13.8361 3.81672 15.4758C4.98287 16.789 6.41022 17.888 7.67083 18.8586C7.95659 19.0786 8.23378 19.2921 8.49742 19.4999C9.00965 19.9037 9.55954 20.3343 10.1168 20.66C10.6739 20.9855 11.3096 21.25 12 21.25C12.6904 21.25 13.3261 20.9855 13.8832 20.66C14.4405 20.3343 14.9903 19.9037 15.5026 19.4999C15.7662 19.2921 16.0434 19.0786 16.3292 18.8586C17.5898 17.888 19.0171 16.789 20.1833 15.4758C21.6395 13.8361 22.75 11.8027 22.75 9.13713C22.75 6.42506 21.2153 4.07296 18.9992 3.05999C16.901 2.1009 14.3121 2.39027 12 4.45885Z"
-                            fill=""
-                          />
+                          {isInWishlist ? (
+                            <path
+                              d="M12 4.45885C9.68795 2.39027 7.09896 2.1009 5.00076 3.05999C2.78471 4.07296 1.25 6.42506 1.25 9.13713C1.25 11.8027 2.3605 13.8361 3.81672 15.4758C4.98287 16.789 6.41022 17.888 7.67083 18.8586C7.95659 19.0786 8.23378 19.2921 8.49742 19.4999C9.00965 19.9037 9.55954 20.3343 10.1168 20.66C10.6739 20.9855 11.3096 21.25 12 21.25C12.6904 21.25 13.3261 20.9855 13.8832 20.66C14.4405 20.3343 14.9903 19.9037 15.5026 19.4999C15.7662 19.2921 16.0434 19.0786 16.3292 18.8586C17.5898 17.888 19.0171 16.789 20.1833 15.4758C21.6395 13.8361 22.75 11.8027 22.75 9.13713C22.75 6.42506 21.2153 4.07296 18.9992 3.05999C16.901 2.1009 14.3121 2.39027 12 4.45885Z"
+                              fill="#DC3545"
+                            />
+                          ) : (
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M5.62436 4.42423C3.96537 5.18256 2.75 6.98626 2.75 9.13713C2.75 11.3345 3.64922 13.0283 4.93829 14.4798C6.00072 15.6761 7.28684 16.6677 8.54113 17.6346C8.83904 17.8643 9.13515 18.0926 9.42605 18.3219C9.95208 18.7366 10.4213 19.1006 10.8736 19.3649C11.3261 19.6293 11.6904 19.75 12 19.75C12.3096 19.75 12.6739 19.6293 13.1264 19.3649C13.5787 19.1006 14.0479 18.7366 14.574 18.3219C14.8649 18.0926 15.161 17.8643 15.4589 17.6346C16.7132 16.6677 17.9993 15.6761 19.0617 14.4798C20.3508 13.0283 21.25 11.3345 21.25 9.13713C21.25 6.98626 20.0346 5.18256 18.3756 4.42423C16.7639 3.68751 14.5983 3.88261 12.5404 6.02077C12.399 6.16766 12.2039 6.25067 12 6.25067C11.7961 6.25067 11.601 6.16766 11.4596 6.02077C9.40166 3.88261 7.23607 3.68751 5.62436 4.42423ZM12 4.45885C9.68795 2.39027 7.09896 2.1009 5.00076 3.05999C2.78471 4.07296 1.25 6.42506 1.25 9.13713C1.25 11.8027 2.3605 13.8361 3.81672 15.4758C4.98287 16.789 6.41022 17.888 7.67083 18.8586C7.95659 19.0786 8.23378 19.2921 8.49742 19.4999C9.00965 19.9037 9.55954 20.3343 10.1168 20.66C10.6739 20.9855 11.3096 21.25 12 21.25C12.6904 21.25 13.3261 20.9855 13.8832 20.66C14.4405 20.3343 14.9903 19.9037 15.5026 19.4999C15.7662 19.2921 16.0434 19.0786 16.3292 18.8586C17.5898 17.888 19.0171 16.789 20.1833 15.4758C21.6395 13.8361 22.75 11.8027 22.75 9.13713C22.75 6.42506 21.2153 4.07296 18.9992 3.05999C16.901 2.1009 14.3121 2.39027 12 4.45885Z"
+                              fill=""
+                            />
+                          )}
                         </svg>
-                      </a>
+                      </button>
                     </div>
                   </form>
                 </div>

@@ -2,7 +2,9 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 
-const LatestProducts = ({ products }) => {
+const LatestProducts = ({ products }: { products?: any[] }) => {
+  const safeProducts = Array.isArray(products) ? products : [];
+
   return (
     <div className="shadow-1 bg-white rounded-xl mt-7.5">
       <div className="px-4 sm:px-6 py-4.5 border-b border-gray-3">
@@ -12,22 +14,28 @@ const LatestProducts = ({ products }) => {
       <div className="p-4 sm:p-6">
         <div className="flex flex-col gap-6">
           {/* <!-- product item --> */}
-          {products.slice(0, 3).map((product, key) => (
-            <div className="flex items-center gap-6" key={key}>
-              <div className="fle
-              
-              x items-center justify-center rounded-[10px] bg-gray-3 max-w-[90px] w-full h-22.5">
-                <Image src={product.imgs?.thumbnails?.[0]} alt="product" width={74} height={74} />
-              </div>
+          {safeProducts.slice(0, 3).map((product, key) => {
+            const imageSrc =
+              product?.imgs?.thumbnails?.[0] ||
+              product?.thumbnail ||
+              (product?.images && product?.images[0]) ||
+              "/images/products/product-01.png";
 
-              <div>
-                <h3 className="font-medium text-dark mb-1 ease-out duration-200 hover:text-blue">
-                  <Link href="/shop-details"> {product.title} </Link>
-                </h3>
-                <p className="text-custom-sm">Price: ${product.price}</p>
+            return (
+              <div className="flex items-center gap-6" key={key}>
+                <div className="flex items-center justify-center rounded-[10px] bg-gray-3 max-w-[90px] w-full h-22.5">
+                  <Image src={imageSrc} alt={product.title || "product"} width={74} height={74} />
+                </div>
+
+                <div>
+                  <h3 className="font-medium text-dark mb-1 ease-out duration-200 hover:text-blue">
+                    <Link href="/shop-details"> {product.title} </Link>
+                  </h3>
+                  <p className="text-custom-sm">Price: ${product.price}</p>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>
