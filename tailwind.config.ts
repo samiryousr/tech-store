@@ -141,6 +141,12 @@ const config: Config = {
           "0%, 100%": { opacity: "0.65", transform: "scale(1)" },
           "50%": { opacity: "0.95", transform: "scale(1.015)" },
         },
+        "zigzag-orbit": {
+          "0%, 100%": { transform: "translate(-50%, -50%) translateY(-22px)" },
+          "25%": { transform: "translate(-50%, -50%) translate(18px, -10px)" },
+          "50%": { transform: "translate(-50%, -50%) translateY(22px)" },
+          "75%": { transform: "translate(-50%, -50%) translate(-18px, 10px)" },
+        },
         "card-in": {
           "0%": { opacity: "0", transform: "translateY(24px) scale(0.98)" },
           "100%": { opacity: "1", transform: "translateY(0) scale(1)" },

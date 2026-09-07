@@ -49,7 +49,7 @@ const Newsletter = () => {
                     type="submit"
                     className="inline-flex justify-center py-3 px-7 text-white bg-blue font-medium rounded-md ease-out duration-200 hover:bg-blue-dark shadow-md active:scale-95"
                   >
-                    Subscribe
+                    contect
                   </button>
                 </div>
                 {submitted && (

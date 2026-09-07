@@ -15,7 +15,7 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [navigationOpen, setNavigationOpen] = useState(false);
   const [stickyMenu, setStickyMenu] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
   const { openCartModal } = useCartModalContext();
   const router = useRouter();
 
@@ -44,7 +44,7 @@ const Header = () => {
     const savedTheme = localStorage.getItem("tech-store-theme");
     const systemPrefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-    const nextDarkMode = savedTheme ? savedTheme === "dark" : systemPrefersDark;
+    const nextDarkMode = savedTheme ? savedTheme === "dark" : true;
     setDarkMode(nextDarkMode);
     document.documentElement.classList.toggle("dark", nextDarkMode);
   }, []);
@@ -164,7 +164,7 @@ const Header = () => {
                 )}
               </button>
 
-            <div className="hidden xl:flex items-center gap-3.5">
+            <div className="hidden">
               <svg
                 width="24"
                 height="24"
@@ -195,7 +195,7 @@ const Header = () => {
                   24/7 SUPPORT
                 </span>
                 <p className="font-medium text-custom-sm text-dark dark:text-white">
-                  01022763033
+                  
                 </p>
               </div>
             </div>

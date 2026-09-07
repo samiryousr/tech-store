@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 const Footer = () => {
   const year = new Date().getFullYear();
@@ -32,11 +33,11 @@ const Footer = () => {
                     />
                   </svg>
                 </span>
-                685 Market Street,Las Vegas, LA 95820,United States.
+                12 Talaat Harb Street, Downtown Cairo, Egypt.
               </li>
 
               <li>
-                <a href="#" className="flex items-center gap-4.5 hover:text-blue dark:hover:text-blue-light">
+                <a href="tel:+201022763033" className="flex items-center gap-4.5 hover:text-blue dark:hover:text-blue-light">
                   <svg
                     width="24"
                     height="24"
@@ -51,12 +52,12 @@ const Footer = () => {
                       fill="#3C50E0"
                     />
                   </svg>
-                  (+099) 532-786-9843
+                  +20 10 2276 3033
                 </a>
               </li>
 
               <li>
-                <a href="#" className="flex items-center gap-4.5 hover:text-blue dark:hover:text-blue-light">
+                <a href="mailto:support@neora.eg" className="flex items-center gap-4.5 hover:text-blue dark:hover:text-blue-light">
                   <svg
                     width="24"
                     height="24"
@@ -71,7 +72,7 @@ const Footer = () => {
                       fill="#3C50E0"
                     />
                   </svg>
-                  support@example.com
+                  support@neora.eg
                 </a>
               </li>
             </ul>
@@ -79,7 +80,7 @@ const Footer = () => {
             {/* <!-- Social Links start --> */}
             <div className="flex items-center gap-4 mt-7.5">
               <a
-                href="#"
+                href="https://www.facebook.com/"
                 aria-label="Facebook Social Link"
                 className="flex ease-out duration-200 hover:text-blue dark:text-slate-400 dark:hover:text-blue-light"
               >
@@ -104,7 +105,7 @@ const Footer = () => {
               </a>
 
               <a
-                href="#"
+                href="https://x.com/"
                 aria-label="Twitter Social Link"
                 className="flex ease-out duration-200 hover:text-blue dark:text-slate-400 dark:hover:text-blue-light"
               >
@@ -124,7 +125,7 @@ const Footer = () => {
               </a>
 
               <a
-                href="#"
+                href="https://www.instagram.com/"
                 aria-label="Instagram Social Link"
                 className="flex ease-out duration-200 hover:text-blue dark:text-slate-400 dark:hover:text-blue-light"
               >
@@ -159,7 +160,7 @@ const Footer = () => {
               </a>
 
               <a
-                href="#"
+                href="https://www.linkedin.com/"
                 aria-label="Linkedin Social Link"
                 className="flex ease-out duration-200 hover:text-blue dark:text-slate-400 dark:hover:text-blue-light"
               >
@@ -193,29 +194,29 @@ const Footer = () => {
 
             <ul className="flex flex-col gap-3.5 text-dark-4 dark:text-slate-400">
               <li>
-                <a className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="#">
+                <Link className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="/my-account">
                   My Account
-                </a>
+                </Link>
               </li>
               <li>
-                <a className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="#">
+                <Link className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="/signin">
                   Login / Register
-                </a>
+                </Link>
               </li>
               <li>
-                <a className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="#">
+                <Link className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="/cart">
                   Cart
-                </a>
+                </Link>
               </li>
               <li>
-                <a className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="#">
+                <Link className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="/wishlist">
                   Wishlist
-                </a>
+                </Link>
               </li>
               <li>
-                <a className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="#">
+                <Link className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="/shop-with-sidebar">
                   Shop
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -227,29 +228,29 @@ const Footer = () => {
 
             <ul className="flex flex-col gap-3 text-dark-4 dark:text-slate-400">
               <li>
-                <a className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="#">
+                <Link className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="/contact">
                   Privacy Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="#">
+                <Link className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="/contact">
                   Refund Policy
-                </a>
+                </Link>
               </li>
               <li>
-                <a className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="#">
+                <Link className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="/contact">
                   Terms of Use
-                </a>
+                </Link>
               </li>
               <li>
-                <a className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="#">
+                <Link className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="/contact">
                   FAQ’s
-                </a>
+                </Link>
               </li>
               <li>
-                <a className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="#">
+                <Link className="ease-out duration-200 hover:text-blue dark:hover:text-blue-light" href="/contact">
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </div>
@@ -267,7 +268,7 @@ const Footer = () => {
               <li>
                 <a
                   className="inline-flex items-center gap-3 py-[9px] pl-4 pr-7.5 text-white rounded-md bg-dark dark:bg-slate-800 border border-transparent dark:border-slate-700 ease-out duration-200 hover:bg-opacity-95 shadow-sm"
-                  href="#"
+                  href="https://www.apple.com/app-store/"
                 >
                   <svg
                     className="fill-current"
@@ -295,7 +296,7 @@ const Footer = () => {
               <li>
                 <a
                   className="inline-flex items-center gap-3 py-[9px] pl-4 pr-8.5 text-white rounded-md bg-blue ease-out duration-200 hover:bg-opacity-95 shadow-sm"
-                  href="#"
+                  href="https://play.google.com/store"
                 >
                   <svg
                     className="fill-current"
@@ -335,7 +336,7 @@ const Footer = () => {
               <p className="font-medium text-dark dark:text-slate-300">We Accept:</p>
 
               <div className="flex flex-wrap items-center gap-6">
-                <a href="#" aria-label="payment system with visa card">
+                <a href="/checkout" aria-label="payment system with visa card">
                   <Image
                     src="/images/payment/payment-01.svg"
                     alt="visa card"
@@ -343,7 +344,7 @@ const Footer = () => {
                     height={22}
                   />
                 </a>
-                <a href="#" aria-label="payment system with paypal">
+                <a href="/checkout" aria-label="payment system with paypal">
                   <Image
                     src="/images/payment/payment-02.svg"
                     alt="paypal"
@@ -351,7 +352,7 @@ const Footer = () => {
                     height={21}
                   />
                 </a>
-                <a href="#" aria-label="payment system with master card">
+                <a href="/checkout" aria-label="payment system with master card">
                   <Image
                     src="/images/payment/payment-03.svg"
                     alt="master card"
@@ -359,7 +360,7 @@ const Footer = () => {
                     height={24}
                   />
                 </a>
-                <a href="#" aria-label="payment system with apple pay">
+                <a href="/checkout" aria-label="payment system with apple pay">
                   <Image
                     src="/images/payment/payment-04.svg"
                     alt="apple pay"
@@ -367,7 +368,7 @@ const Footer = () => {
                     height={22}
                   />
                 </a>
-                <a href="#" aria-label="payment system with google pay">
+                <a href="/checkout" aria-label="payment system with google pay">
                   <Image
                     src="/images/payment/payment-05.svg"
                     alt="google pay"

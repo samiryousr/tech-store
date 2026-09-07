@@ -62,7 +62,12 @@ const NewArrival = () => {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-x-4 sm:gap-y-6 xl:gap-x-7.5 xl:gap-y-9">
           {/* <!-- New Arrivals item --> */}
           {products.map((item) => (
-            <SingleGridItem item={item} key={item.id} />
+            <div
+              key={item.id}
+              className="relative"
+            >
+              <SingleGridItem item={item} />
+            </div>
           ))}
         </div>
       </div>

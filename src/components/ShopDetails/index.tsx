@@ -22,7 +22,6 @@ import {
 
 const ShopDetails = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const [activeColor, setActiveColor] = useState("blue");
   const { openPreviewModal } = usePreviewSlider();
   const [previewImg, setPreviewImg] = useState(0);
 
@@ -30,6 +29,7 @@ const ShopDetails = () => {
   const [type, setType] = useState("active");
   const [sim, setSim] = useState("dual");
   const [quantity, setQuantity] = useState(1);
+  const [cartAdded, setCartAdded] = useState(false);
 
   const [activeTab, setActiveTab] = useState("tabOne");
 
@@ -44,7 +44,7 @@ const ShopDetails = () => {
     },
     {
       id: "gb512",
-      title: "521 GB",
+      title: "512 GB",
     },
   ];
 
@@ -87,8 +87,6 @@ const ShopDetails = () => {
     },
   ];
 
-  const colors = ["red", "blue", "orange", "pink", "purple"];
-
   const productFromStorage = useAppSelector(
     (state) => state.productDetailsReducer.value
   );
@@ -97,6 +95,10 @@ const ShopDetails = () => {
   const [product, setProduct] = useState<Product>(productFromStorage);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const isStorageProduct = ["smartphones", "laptops", "tablets"].includes(
+    product?.category
+  );
+  const isSmartphone = product?.category === "smartphones";
   const isInWishlist = wishlistItems.some((w) => w.id === product?.id);
 
   useEffect(() => {
@@ -187,6 +189,8 @@ const ShopDetails = () => {
         quantity,
       })
     );
+    setCartAdded(true);
+    window.setTimeout(() => setCartAdded(false), 2200);
   };
 
   const handleAddToWishlist = (e: React.MouseEvent) => {
@@ -445,7 +449,7 @@ const ShopDetails = () => {
                       </svg>
 
                       <span className={product.stock > 0 ? "text-green" : "text-red"}>
-                        {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                        {product.stock > 0 ? "In stock" : "Out of stock"}
                       </span>
                     </div>
                   </div>
@@ -513,43 +517,6 @@ const ShopDetails = () => {
                       {/* <!-- details item --> */}
                       <div className="flex items-center gap-4">
                         <div className="min-w-[65px]">
-                          <h4 className="font-medium text-dark">Color:</h4>
-                        </div>
-
-                        <div className="flex items-center gap-2.5">
-                          {colors.map((color, key) => (
-                            <label
-                              key={key}
-                              htmlFor={color}
-                              className="cursor-pointer select-none flex items-center"
-                            >
-                              <div className="relative">
-                                <input
-                                  type="radio"
-                                  name="color"
-                                  id={color}
-                                  className="sr-only"
-                                  onChange={() => setActiveColor(color)}
-                                />
-                                <div
-                                  className={`flex items-center justify-center w-5.5 h-5.5 rounded-full ${activeColor === color && "border"
-                                    }`}
-                                  style={{ borderColor: `${color}` }}
-                                >
-                                  <span
-                                    className="block w-3 h-3 rounded-full"
-                                    style={{ backgroundColor: `${color}` }}
-                                  ></span>
-                                </div>
-                              </div>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* <!-- details item --> */}
-                      <div className="flex items-center gap-4">
-                        <div className="min-w-[65px]">
                           <h4 className="font-medium text-dark">Storage:</h4>
                         </div>
 
@@ -562,7 +529,7 @@ const ShopDetails = () => {
                             >
                               <div className="relative">
                                 <input
-                                  type="checkbox"
+                                  type="radio"
                                   name="storage"
                                   id={item.id}
                                   className="sr-only"
@@ -615,7 +582,7 @@ const ShopDetails = () => {
                       </div>
 
                       {/* // <!-- details item --> */}
-                      <div className="flex items-center gap-4">
+                      <div className="hidden items-center gap-4">
                         <div className="min-w-[65px]">
                           <h4 className="font-medium text-dark">Type:</h4>
                         </div>
@@ -629,8 +596,8 @@ const ShopDetails = () => {
                             >
                               <div className="relative">
                                 <input
-                                  type="checkbox"
-                                  name="storage"
+                                  type="radio"
+                                  name="type"
                                   id={item.id}
                                   className="sr-only"
                                   onChange={() => setType(item.id)}
@@ -682,7 +649,7 @@ const ShopDetails = () => {
                       </div>
 
                       {/* // <!-- details item --> */}
-                      <div className="flex items-center gap-4">
+                      <div className={`${!isSmartphone ? "hidden" : "flex"} items-center gap-4`}>
                         <div className="min-w-[65px]">
                           <h4 className="font-medium text-dark">Sim:</h4>
                         </div>
@@ -696,8 +663,8 @@ const ShopDetails = () => {
                             >
                               <div className="relative">
                                 <input
-                                  type="checkbox"
-                                  name="storage"
+                                  type="radio"
+                                  name="sim"
                                   id={item.id}
                                   className="sr-only"
                                   onChange={() => setSim(item.id)}
@@ -805,10 +772,18 @@ const ShopDetails = () => {
                       <button
                         type="button"
                         onClick={handleAddToCart}
-                        className="inline-flex font-medium text-white bg-blue py-3 px-7 rounded-md ease-out duration-200 hover:bg-blue-dark"
+                        className={`inline-flex font-medium text-white py-3 px-7 rounded-md ease-out duration-200 ${
+                          cartAdded ? "bg-green" : "bg-blue hover:bg-blue-dark"
+                        }`}
                       >
-                        Add to Cart
+                        {cartAdded ? "Added to Cart" : "Add to Cart"}
                       </button>
+
+                      {cartAdded && (
+                        <span className="text-sm font-medium text-green" role="status" aria-live="polite">
+                          Product added successfully.
+                        </span>
+                      )}
 
                       <button
                         type="button"
