@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import Breadcrumb from "../Common/Breadcrumb";
 import Image from "next/image";
 import Newsletter from "../Common/Newsletter";
-import RecentlyViewdItems from "./RecentlyViewd";
 import { usePreviewSlider } from "@/app/context/PreviewSliderContext";
 import { AppDispatch, useAppSelector } from "@/redux/store";
 import { useDispatch } from "react-redux";
@@ -30,8 +29,6 @@ const ShopDetails = () => {
   const [sim, setSim] = useState("dual");
   const [quantity, setQuantity] = useState(1);
   const [cartAdded, setCartAdded] = useState(false);
-
-  const [activeTab, setActiveTab] = useState("tabOne");
 
   const storages = [
     {
@@ -69,21 +66,6 @@ const ShopDetails = () => {
     {
       id: "e-sim",
       title: "E Sim",
-    },
-  ];
-
-  const tabs = [
-    {
-      id: "tabOne",
-      title: "Description",
-    },
-    {
-      id: "tabTwo",
-      title: "Additional Information",
-    },
-    {
-      id: "tabThree",
-      title: "Reviews",
     },
   ];
 
@@ -825,7 +807,7 @@ const ShopDetails = () => {
             </div>
           </section>
 
-          <section className="overflow-hidden bg-gray-2 py-20">
+          {false && <section className="overflow-hidden bg-gray-2 py-20">
             <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
               {/* <!--== tab header start ==--> */}
               <div className="flex flex-wrap items-center bg-white rounded-[10px] shadow-1 gap-5 xl:gap-12.5 py-4.5 px-4 sm:px-6">
@@ -1560,9 +1542,7 @@ const ShopDetails = () => {
               {/* <!-- tab content three end --> */}
               {/* <!--== tab content end ==--> */}
             </div>
-          </section>
-
-          <RecentlyViewdItems />
+          </section>}
 
           <Newsletter />
         </>

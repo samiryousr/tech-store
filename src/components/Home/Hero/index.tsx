@@ -102,7 +102,7 @@ const Hero = () => {
                           width={123}
                           height={161}
                           loading="lazy"
-                          className="w-24 sm:w-[123px] h-auto object-contain transition-transform duration-300 hover:scale-105"
+                          className="w-24 sm:w-[123px] h-auto scale-[1.1] object-contain transition-transform duration-300 hover:scale-110"
                         />
                       ) : (
                         <span className="text-xs text-dark-4 dark:text-slate-400">Loading...</span>
@@ -148,7 +148,7 @@ const Hero = () => {
                           width={123}
                           height={161}
                           loading="lazy"
-                          className="w-24 sm:w-[123px] h-auto object-contain transition-transform duration-300 hover:scale-105"
+                          className="w-24 sm:w-[123px] h-auto scale-[1.1] object-contain transition-transform duration-300 hover:scale-110"
                         />
                       ) : (
                         <span className="text-xs text-dark-4 dark:text-slate-400">Loading...</span>

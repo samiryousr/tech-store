@@ -205,10 +205,14 @@ const Header = () => {
 
             <div className="flex w-full lg:w-auto justify-between items-center gap-5">
               <div className="flex items-center gap-5">
-                <Link href="/signin" className="flex items-center gap-2.5">
+                <Link
+                  href="/signin"
+                  aria-label="Sign in"
+                  className="flex items-center"
+                >
                   <svg
-                    width="24"
-                    height="24"
+                    width="18"
+                    height="18"
                     viewBox="0 0 24 24"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
@@ -227,14 +231,6 @@ const Header = () => {
                     />
                   </svg>
 
-                  <div>
-                    <span className="block text-2xs text-dark-4 dark:text-slate-400 uppercase">
-                      account
-                    </span>
-                    <p className="font-medium text-custom-sm text-dark dark:text-white">
-                      Sign In
-                    </p>
-                  </div>
                 </Link>
 
                 <button
@@ -363,6 +359,14 @@ const Header = () => {
                       >
                         <Link
                           href={menuItem.path}
+                          onClick={
+                            menuItem.title === "Home"
+                              ? (event) => {
+                                  event.preventDefault();
+                                  window.location.href = "/";
+                                }
+                              : undefined
+                          }
                           className={`hover:text-blue text-custom-sm font-medium text-dark dark:text-slate-200 dark:hover:text-blue-light flex ${
                             stickyMenu ? "xl:py-4" : "xl:py-6"
                           }`}

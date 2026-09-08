@@ -104,8 +104,8 @@ const HeroShowcase = () => {
             width={380}
             height={380}
             className={isVisible
-              ? "animate-hero-product-float max-h-full w-full object-contain drop-shadow-md"
-              : "max-h-full w-full object-contain"}
+              ? "animate-hero-product-float max-h-full w-full scale-[1.08] object-contain drop-shadow-md"
+              : "max-h-full w-full scale-[1.08] object-contain"}
             priority
           />
         ) : (
