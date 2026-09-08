@@ -1,6 +1,11 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/redux/store";
+import { updateproductDetails } from "@/redux/features/product-details";
+import { havitHeadsetProduct } from "@/data/countdownProduct";
 
 const CounDown = () => {
   const [days, setDays] = useState(14);
@@ -9,6 +14,8 @@ const CounDown = () => {
   const [seconds, setSeconds] = useState(45);
   const [isVisible, setIsVisible] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     const el = cardRef.current;
@@ -47,6 +54,17 @@ const CounDown = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleProductNavigation = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    dispatch(updateproductDetails(havitHeadsetProduct));
+    try {
+      localStorage.setItem("productDetails", JSON.stringify(havitHeadsetProduct));
+    } catch (err) {
+      console.error(err);
+    }
+    router.push(`/shop-details?id=${havitHeadsetProduct.id}`);
+  };
+
   return (
     <section className="overflow-hidden py-20">
       <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
@@ -63,7 +81,10 @@ const CounDown = () => {
               Don’t Miss!!
             </span>
 
-            <h2 className="font-bold text-dark dark:text-white text-xl lg:text-heading-4 xl:text-heading-3 mb-3">
+            <h2
+              onClick={handleProductNavigation}
+              className="font-bold text-dark dark:text-white text-xl lg:text-heading-4 xl:text-heading-3 mb-3 cursor-pointer hover:text-blue transition-colors"
+            >
               Enhance Your Music Experience
             </h2>
 
@@ -115,12 +136,12 @@ const CounDown = () => {
             </div>
             {/* <!-- Countdown timer ends --> */}
 
-            <a
-              href="/shop-with-sidebar"
-              className="inline-flex font-medium text-custom-sm text-white bg-blue py-3 px-9.5 rounded-md ease-out duration-200 hover:bg-blue-dark mt-7.5 shadow-md hover:shadow-lg transition-all active:scale-95"
+            <button
+              onClick={handleProductNavigation}
+              className="inline-flex items-center justify-center font-medium text-custom-sm text-white bg-blue py-3 px-9.5 rounded-md ease-out duration-200 hover:bg-blue-dark mt-7.5 shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
             >
               Check it Out!
-            </a>
+            </button>
           </div>
 
           {/* <!-- bg shapes --> */}
@@ -134,9 +155,10 @@ const CounDown = () => {
           />
           <Image
             src="/images/countdown/countdown-01.png"
-            alt="product"
+            alt="Havit H206d Gaming Headset"
             loading="lazy"
-            className="hidden lg:block absolute right-4 xl:right-33 bottom-4 xl:bottom-10 z-1 drop-shadow-2xl"
+            onClick={handleProductNavigation}
+            className="hidden lg:block absolute right-4 xl:right-33 bottom-4 xl:bottom-10 z-1 drop-shadow-2xl cursor-pointer hover:scale-105 transition-transform duration-300"
             width={411}
             height={376}
           />

@@ -1,4 +1,5 @@
 import { Product, ProductsResponse } from "@/types/product";
+import { havitHeadsetProduct } from "@/data/countdownProduct";
 
 export const TECH_CATEGORIES = [
   "smartphones",
@@ -66,6 +67,10 @@ export const getShopData = async (): Promise<ProductsResponse> => {
       isTechCategory(product.category)
     );
 
+    if (!products.some((p) => p.id === havitHeadsetProduct.id)) {
+      products.push(havitHeadsetProduct);
+    }
+
     return {
       ...data,
       products,
@@ -77,10 +82,10 @@ export const getShopData = async (): Promise<ProductsResponse> => {
     console.error("Error fetching shop data:", error);
 
     return {
-      products: [],
-      total: 0,
+      products: [havitHeadsetProduct],
+      total: 1,
       skip: 0,
-      limit: 0,
+      limit: 1,
     };
   }
 };
