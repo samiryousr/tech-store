@@ -102,11 +102,11 @@ const ShopWithoutSidebar = () => {
         title={"Explore All Products"}
         pages={["shop", "/", "shop without sidebar"]}
       />
-      <section className="overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28 bg-[#f3f4f6]">
+      <section className="overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28 bg-[#f3f4f6] dark:bg-[#0b0f19]">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
           <div className="flex gap-7.5">
             <div className="w-full">
-              <div className="rounded-lg bg-white shadow-1 pl-3 pr-2.5 py-2.5 mb-6">
+              <div className="rounded-lg bg-white dark:bg-[#111827] border border-transparent dark:border-slate-800 shadow-1 pl-3 pr-2.5 py-2.5 mb-6">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div className="flex flex-wrap items-center gap-4">
                     <CustomSelect
@@ -118,13 +118,13 @@ const ShopWithoutSidebar = () => {
                       }}
                     />
 
-                    <p className="text-sm sm:text-base text-body">
+                    <p className="text-sm sm:text-base text-body dark:text-slate-400">
                       Showing{" "}
-                      <span className="text-dark font-medium">
+                      <span className="text-dark dark:text-white font-medium">
                         {startCount} - {endCount}
                       </span>{" "}
                       of{" "}
-                      <span className="text-dark font-semibold">
+                      <span className="text-dark dark:text-white font-semibold">
                         {sortedProducts.length}
                       </span>{" "}
                       Products
@@ -138,7 +138,7 @@ const ShopWithoutSidebar = () => {
                       className={`${
                         productStyle === "grid"
                           ? "bg-blue border-blue text-white"
-                          : "text-dark bg-gray-1 border-gray-3"
+                          : "text-dark dark:text-slate-300 bg-gray-1 dark:bg-slate-800 border-gray-3 dark:border-slate-700"
                       } flex items-center justify-center w-10.5 h-9 rounded-[5px] border ease-out duration-200 hover:bg-blue hover:border-blue hover:text-white`}
                     >
                       <svg
@@ -182,7 +182,7 @@ const ShopWithoutSidebar = () => {
                       className={`${
                         productStyle === "list"
                           ? "bg-blue border-blue text-white"
-                          : "text-dark bg-gray-1 border-gray-3"
+                          : "text-dark dark:text-slate-300 bg-gray-1 dark:bg-slate-800 border-gray-3 dark:border-slate-700"
                       } flex items-center justify-center w-10.5 h-9 rounded-[5px] border ease-out duration-200 hover:bg-blue hover:border-blue hover:text-white`}
                     >
                       <svg
@@ -213,11 +213,11 @@ const ShopWithoutSidebar = () => {
 
               {/* <!-- Products Grid/List Tab Content Start --> */}
               {loading ? (
-                <div className="bg-white rounded-lg shadow-1 p-12 text-center">
+                <div className="bg-white dark:bg-[#111827] dark:border dark:border-slate-800 rounded-lg shadow-1 p-12 text-center text-dark-4 dark:text-slate-300">
                   Loading products...
                 </div>
               ) : loadError ? (
-                <div className="bg-white rounded-lg shadow-1 p-12 text-center text-red">
+                <div className="bg-white dark:bg-[#111827] dark:border dark:border-slate-800 rounded-lg shadow-1 p-12 text-center text-red">
                   {loadError}
                 </div>
               ) : paginatedProducts.length > 0 ? (
@@ -237,8 +237,8 @@ const ShopWithoutSidebar = () => {
                   )}
                 </div>
               ) : (
-                <div className="bg-white rounded-lg shadow-1 p-12 text-center">
-                  <p className="text-xl font-medium text-dark mb-2">
+                <div className="bg-white dark:bg-[#111827] dark:border dark:border-slate-800 rounded-lg shadow-1 p-12 text-center">
+                  <p className="text-xl font-medium text-dark dark:text-white mb-2">
                     No products found
                   </p>
                 </div>
@@ -248,7 +248,7 @@ const ShopWithoutSidebar = () => {
               {/* <!-- Products Pagination Start --> */}
               {totalPages > 1 && (
                 <div className="flex justify-center mt-15">
-                  <div className="bg-white shadow-1 rounded-md p-2">
+                  <div className="bg-white dark:bg-[#111827] dark:border dark:border-slate-800 shadow-1 rounded-md p-2">
                     <ul className="flex items-center gap-1">
                       <li>
                         <button
@@ -257,7 +257,7 @@ const ShopWithoutSidebar = () => {
                           type="button"
                           disabled={validPage <= 1}
                           onClick={() => handlePageChange(validPage - 1)}
-                          className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-current hover:text-white hover:bg-blue"
+                          className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] text-dark dark:text-slate-300 disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-current hover:text-white hover:bg-blue dark:hover:bg-blue"
                         >
                           <svg
                             className="fill-current"
@@ -283,7 +283,7 @@ const ShopWithoutSidebar = () => {
                             className={`flex py-1.5 px-3.5 duration-200 rounded-[3px] text-sm font-medium ${
                               validPage === pageNum
                                 ? "bg-blue text-white"
-                                : "text-dark hover:text-white hover:bg-blue"
+                                : "text-dark dark:text-slate-300 hover:text-white hover:bg-blue dark:hover:bg-blue"
                             }`}
                           >
                             {pageNum}
@@ -298,7 +298,7 @@ const ShopWithoutSidebar = () => {
                           type="button"
                           disabled={validPage >= totalPages}
                           onClick={() => handlePageChange(validPage + 1)}
-                          className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-current hover:text-white hover:bg-blue"
+                          className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] text-dark dark:text-slate-300 disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-current hover:text-white hover:bg-blue dark:hover:bg-blue"
                         >
                           <svg
                             className="fill-current"

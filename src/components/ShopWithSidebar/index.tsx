@@ -258,7 +258,7 @@ const ShopWithSidebar = () => {
         title={"Explore All Products"}
         pages={["shop", "/", "shop with sidebar"]}
       />
-      <section className="overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28 bg-white">
+      <section className="overflow-hidden relative pb-20 pt-5 lg:pt-20 xl:pt-28 bg-white dark:bg-[#0b0f19]">
         <div className="max-w-[1170px] w-full mx-auto px-4 sm:px-8 xl:px-0">
           <div className="flex gap-7.5">
             {/* <!-- Sidebar Start --> */}
@@ -364,7 +364,7 @@ const ShopWithSidebar = () => {
             {/* <!-- Content Start --> */}
             <div className="xl:max-w-[870px] w-full">
               {/* Top bar */}
-              <div className="rounded-lg bg-white shadow-1 pl-3 pr-2.5 py-2.5 mb-6">
+              <div className="rounded-lg bg-white dark:bg-[#111827] border border-transparent dark:border-slate-800 shadow-1 pl-3 pr-2.5 py-2.5 mb-6">
                 <div className="flex items-center justify-between flex-wrap gap-4">
                   {/* Top bar left */}
                   <div className="flex flex-wrap items-center gap-4">
@@ -374,9 +374,9 @@ const ShopWithSidebar = () => {
                       onChange={(opt) => setSelectedSort(opt)}
                     />
 
-                    <p className="text-sm text-dark-4">
+                    <p className="text-sm text-dark-4 dark:text-slate-400">
                       Showing{" "}
-                      <span className="text-dark font-medium">
+                      <span className="text-dark dark:text-white font-medium">
                         {filteredProducts.length === 0
                           ? "0"
                           : `${startIndex + 1}–${Math.min(
@@ -397,7 +397,7 @@ const ShopWithSidebar = () => {
                       className={`${
                         productStyle === "grid"
                           ? "bg-blue border-blue text-white"
-                          : "text-dark bg-gray-1 border-gray-3"
+                          : "text-dark dark:text-slate-300 bg-gray-1 dark:bg-slate-800 border-gray-3 dark:border-slate-700"
                       } flex items-center justify-center w-10.5 h-9 rounded-[5px] border ease-out duration-200 hover:bg-blue hover:border-blue hover:text-white`}
                     >
                       <svg
@@ -441,7 +441,7 @@ const ShopWithSidebar = () => {
                       className={`${
                         productStyle === "list"
                           ? "bg-blue border-blue text-white"
-                          : "text-dark bg-gray-1 border-gray-3"
+                          : "text-dark dark:text-slate-300 bg-gray-1 dark:bg-slate-800 border-gray-3 dark:border-slate-700"
                       } flex items-center justify-center w-10.5 h-9 rounded-[5px] border ease-out duration-200 hover:bg-blue hover:border-blue hover:text-white`}
                     >
                       <svg
@@ -605,7 +605,7 @@ const ShopWithSidebar = () => {
               {/* Products Pagination */}
               {totalPages > 1 && (
                 <div className="flex justify-center mt-15">
-                  <div className="bg-white shadow-1 rounded-md p-2">
+                  <div className="bg-white dark:bg-[#111827] dark:border dark:border-slate-800 shadow-1 rounded-md p-2">
                     <ul className="flex items-center gap-1">
                       {/* Previous Page Button */}
                       <li>
@@ -617,7 +617,7 @@ const ShopWithSidebar = () => {
                           disabled={currentPage === 1}
                           aria-label="button for pagination left"
                           type="button"
-                          className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue hover:text-white"
+                          className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] text-dark dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-blue hover:text-white dark:hover:bg-blue"
                         >
                           <svg
                             className="fill-current"
@@ -661,7 +661,7 @@ const ShopWithSidebar = () => {
                                 className={`flex py-1.5 px-3.5 duration-200 rounded-[3px] font-medium text-sm ${
                                   isCurrent
                                     ? "bg-blue text-white shadow-sm"
-                                    : "text-dark hover:text-white hover:bg-blue"
+                                    : "text-dark dark:text-slate-300 hover:text-white hover:bg-blue dark:hover:bg-blue"
                                 }`}
                               >
                                 {pageNum}
@@ -675,7 +675,7 @@ const ShopWithSidebar = () => {
                           return (
                             <li
                               key={pageNum}
-                              className="px-1 text-dark-4 text-sm"
+                              className="px-1 text-dark-4 dark:text-slate-400 text-sm"
                             >
                               ...
                             </li>
@@ -696,7 +696,7 @@ const ShopWithSidebar = () => {
                           disabled={currentPage === totalPages}
                           aria-label="button for pagination right"
                           type="button"
-                          className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] disabled:opacity-40 disabled:cursor-not-allowed hover:text-white hover:bg-blue"
+                          className="flex items-center justify-center w-8 h-9 ease-out duration-200 rounded-[3px] text-dark dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:text-white hover:bg-blue dark:hover:bg-blue"
                         >
                           <svg
                             className="fill-current"
