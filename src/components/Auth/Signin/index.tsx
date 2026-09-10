@@ -3,6 +3,8 @@ import Link from "next/link";
 import React from "react";
 
 const Signin = () => {
+  const [username, setUsername] = React.useState("");
+  const [password, setPassword] = React.useState("");
   return (
     <>
       <Breadcrumb title={"Signin"} pages={["Signin"]} />
