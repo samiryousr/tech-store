@@ -29,6 +29,13 @@ const ShopDetails = () => {
   const [sim, setSim] = useState("dual");
   const [quantity, setQuantity] = useState(1);
   const [cartAdded, setCartAdded] = useState(false);
+  const [activeTab, setActiveTab] = useState("tabOne");
+
+  const tabs = [
+    { id: "tabOne", title: "Specifications" },
+    { id: "tabTwo", title: "Reviews" },
+    { id: "tabThree", title: "Questions" },
+  ];
 
   const storages = [
     {

@@ -1,10 +1,11 @@
+'use client";'
 import Breadcrumb from "@/components/Common/Breadcrumb";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 
 const Signin = () => {
-  const [username, setUsername] = React.useState("");
-  const [password, setPassword] = React.useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   return (
     <>
       <Breadcrumb title={"Signin"} pages={["Signin"]} />
