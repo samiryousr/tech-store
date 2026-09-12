@@ -11,6 +11,7 @@ import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 
 const Signin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -20,7 +21,7 @@ const Signin = () => {
     e.preventDefault();
     setError("");
     if (!email || !password) {
-      setError("يرجى إدخال البريد الإلكتروني وكلمة السر");
+      setError("Please enter your email and password.");
       return;
     }
 
@@ -30,11 +31,19 @@ const Signin = () => {
       console.log("Logged in successfully:", result.user);
       router.push("/"); // التوجيه للصفحة الرئيسية
     } catch (err: any) {
-      console.error(err);
-      if (err.code === "auth/invalid-credential" || err.code === "auth/user-not-found") {
-        setError("الإيميل أو كلمة السر غير صحيحة");
+      if (
+        err.code === "auth/invalid-credential" ||
+        err.code === "auth/user-not-found" ||
+        err.code === "auth/wrong-password"
+      ) {
+        setError("Invalid email or password. Please try again.");
+      } else if (err.code === "auth/too-many-requests") {
+        setError("Too many failed attempts. Please try again later.");
+      } else if (err.code === "auth/network-request-failed") {
+        setError("Network error. Please check your internet connection.");
       } else {
-        setError(err.message || "حدث خطأ في تسجيل الدخول، حاول مرة أخرى");
+        console.warn("Sign in error:", err.code, err.message);
+        setError(err.message || "Failed to sign in. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -49,8 +58,10 @@ const Signin = () => {
       console.log("Logged in with Google:", result.user);
       router.push("/");
     } catch (err: any) {
-      console.error(err);
-      setError("فشل التسجيل باستخدام حساب جوجل");
+      if (err.code !== "auth/popup-closed-by-user") {
+        console.warn("Google sign-in error:", err.code);
+        setError("Failed to sign in with Google. Please try again.");
+      }
     }
   };
 
@@ -69,7 +80,22 @@ const Signin = () => {
 
             <form onSubmit={handleEmailSignIn}>
               {/* عرض رسالة الخطأ لو وجدت */}
-              {error && <p className="text-red-500 text-xs mb-3 text-center bg-red-50 py-2 rounded">{error}</p>}
+              {error && (
+                <div className="flex items-center gap-2.5 p-3 mb-4 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-red-600 dark:text-red-400 text-xs sm:text-sm">
+                  <svg
+                    className="w-4 h-4 shrink-0 text-red-500"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="font-medium leading-snug">{error}</span>
+                </div>
+              )}
 
               <div className="mb-3">
                 <label htmlFor="email" className="block mb-1.5 text-sm">
@@ -86,18 +112,68 @@ const Signin = () => {
               </div>
 
               <div className="mb-3">
-                <label htmlFor="password" className="block mb-1.5 text-sm">
-                  Password
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  autoComplete="current-password"
-                  className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-2 px-3 text-sm outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
-                />
+                <div className="flex items-center justify-between mb-1.5">
+                  <label htmlFor="password" className="block text-sm">
+                    Password
+                  </label>
+                  <Link
+                    href="/forgot-password"
+                    className="text-xs text-blue hover:underline font-medium"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-2 pl-3 pr-10 text-sm outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-dark dark:hover:text-white transition-colors"
+                  >
+                    {showPassword ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                        <line x1="2" x2="22" y1="2" y2="22" />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <button

@@ -11,6 +11,7 @@ import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } f
 const Signup = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -19,6 +20,12 @@ const Signup = () => {
   const handleEmailSignUp = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); // منع إعادة تحميل الصفحة
     setError("");
+
+    if (!email || !password) {
+      setError("Please enter your email and password.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -26,13 +33,17 @@ const Signup = () => {
       console.log("Account created successfully:", res.user);
       router.push("/");
     } catch (err: any) {
-      console.error("Signup error:", err);
       if (err.code === "auth/email-already-in-use") {
-        setError("هذا البريد الإلكتروني مستخدم بالفعل");
+        setError("This email address is already registered.");
       } else if (err.code === "auth/weak-password") {
-        setError("كلمة السر ضعيفة، يجب أن تحتوي على 6 أحرف على الأقل");
+        setError("Password is too weak. It must be at least 6 characters.");
+      } else if (err.code === "auth/invalid-email") {
+        setError("Please enter a valid email address.");
+      } else if (err.code === "auth/network-request-failed") {
+        setError("Network error. Please check your internet connection.");
       } else {
-        setError(err.message || "حدث خطأ أثناء إنشاء الحساب");
+        console.warn("Signup error:", err.code, err.message);
+        setError(err.message || "Failed to create account. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -48,8 +59,10 @@ const Signup = () => {
       console.log("Signed up with Google:", res.user);
       router.push("/");
     } catch (err: any) {
-      console.error("Google Signup error:", err);
-      setError("فشل إنشاء حساب باستخدام جوجل");
+      if (err.code !== "auth/popup-closed-by-user") {
+        console.warn("Google Signup error:", err.code);
+        setError("Failed to sign up with Google. Please try again.");
+      }
     }
   };
 
@@ -68,9 +81,20 @@ const Signup = () => {
 
             <form onSubmit={handleEmailSignUp}>
               {error && (
-                <p className="text-red-500 text-xs mb-3 text-center bg-red-50 py-2 px-3 rounded border border-red-200">
-                  {error}
-                </p>
+                <div className="flex items-center gap-2.5 p-3 mb-4 rounded-lg bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-red-600 dark:text-red-400 text-xs sm:text-sm">
+                  <svg
+                    className="w-4 h-4 shrink-0 text-red-500"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <span className="font-medium leading-snug">{error}</span>
+                </div>
               )}
 
               <div className="mb-3">
@@ -92,16 +116,58 @@ const Signup = () => {
                 <label htmlFor="password" className="block mb-1.5 text-sm">
                   Password
                 </label>
-                <input
-                  type="password"
-                  id="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Create a password"
-                  autoComplete="new-password"
-                  className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-2 px-3 text-sm outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
-                />
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    id="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Create a password"
+                    autoComplete="new-password"
+                    className="rounded-lg border border-gray-3 bg-gray-1 placeholder:text-dark-5 w-full py-2 pl-3 pr-10 text-sm outline-none duration-200 focus:border-transparent focus:shadow-input focus:ring-2 focus:ring-blue/20"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-dark dark:hover:text-white transition-colors"
+                  >
+                    {showPassword ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
+                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
+                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
+                        <line x1="2" x2="22" y1="2" y2="22" />
+                      </svg>
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    )}
+                  </button>
+                </div>
               </div>
 
               <button
