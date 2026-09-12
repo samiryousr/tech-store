@@ -11,16 +11,47 @@ import Link from "next/link";
 import { useAppSelector } from "@/redux/store";
 import { selectTotalPrice } from "@/redux/features/cart-slice";
 import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { removeAllItemsFromCart } from "@/redux/features/cart-slice";
+import { useAuth } from "@/app/context/AuthContext";
+import { saveOrder } from "@/lib/orders";
 
 const Checkout = () => {
   const cartItems = useAppSelector((state) => state.cartReducer.items);
   const totalPrice = useSelector(selectTotalPrice);
+  const dispatch = useDispatch();
+  const { user } = useAuth();
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
   const shippingFee = cartItems.length ? 15 : 0;
 
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (cartItems.length) setSubmitted(true);
+    setError("");
+
+    if (!cartItems.length) return;
+    if (!user) {
+      setError("Please sign in before placing an order.");
+      return;
+    }
+
+    const orderId = typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}`;
+
+    saveOrder(user.uid, {
+      orderId,
+      createdAt: new Date().toLocaleDateString("en-US", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
+      status: "processing",
+      total: `$${(totalPrice + shippingFee).toFixed(2)}`,
+      title: cartItems.map((item) => `${item.title} x${item.quantity}`).join(", "),
+    });
+    dispatch(removeAllItemsFromCart());
+    setSubmitted(true);
   };
 
   return (
@@ -129,6 +160,7 @@ const Checkout = () => {
                 {submitted && (
                   <p className="mt-5 text-center text-green">Order submitted successfully.</p>
                 )}
+                {error && <p className="mt-5 text-center text-red">{error}</p>}
                 <button
                   type="submit"
                   disabled={!cartItems.length}

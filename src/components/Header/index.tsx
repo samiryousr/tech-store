@@ -11,6 +11,7 @@ import { selectTotalPrice } from "@/redux/features/cart-slice";
 import { useCartModalContext } from "@/app/context/CartSidebarModalContext";
 import Image from "next/image";
 import Switch from "../Common/Switch";
+import { useAuth } from "@/app/context/AuthContext";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -19,6 +20,7 @@ const Header = () => {
   const [darkMode, setDarkMode] = useState(true);
   const { openCartModal } = useCartModalContext();
   const router = useRouter();
+  const { user } = useAuth();
 
   const product = useAppSelector((state) => state.cartReducer.items);
   const totalPrice = useSelector(selectTotalPrice);
@@ -69,6 +71,8 @@ const Header = () => {
     const query = option.value === "0" ? "" : `?category=${option.value}`;
     router.push(`/shop-without-sidebar${query}`);
   };
+
+  const userName = user?.displayName?.trim().split(/\s+/)[0] || user?.email?.split("@")[0];
 
   const options = [
     { label: "All Categories", value: "0" },
@@ -208,9 +212,9 @@ const Header = () => {
             <div className="flex w-full lg:w-auto justify-between items-center gap-5">
               <div className="flex items-center gap-5">
                 <Link
-                  href="/signin"
-                  aria-label="Sign in"
-                  className="flex items-center"
+                  href={user ? "/my-account" : "/signin"}
+                  aria-label={user ? `Account for ${userName}` : "Sign in"}
+                  className="flex items-center gap-2"
                 >
                   <svg
                     width="18"
@@ -232,7 +236,11 @@ const Header = () => {
                       fill="#3C50E0"
                     />
                   </svg>
-
+                  {userName && (
+                    <span className="max-w-24 truncate text-sm font-medium text-dark dark:text-white">
+                      {userName}
+                    </span>
+                  )}
                 </Link>
 
                 <button
