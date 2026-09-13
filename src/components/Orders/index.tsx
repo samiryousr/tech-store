@@ -27,28 +27,28 @@ const Orders = () => {
         <div className="min-w-[770px]">
           {/* <!-- order item --> */}
           {orders.length > 0 && (
-            <div className="items-center justify-between py-4.5 px-7.5 hidden md:flex ">
+            <div className="items-center justify-between py-4.5 px-7.5 hidden md:flex border-b border-gray-3 dark:border-slate-800">
               <div className="min-w-[111px]">
-                <p className="text-custom-sm text-dark">Order</p>
+                <p className="text-custom-sm font-semibold text-dark dark:text-slate-300">Order</p>
               </div>
               <div className="min-w-[175px]">
-                <p className="text-custom-sm text-dark">Date</p>
+                <p className="text-custom-sm font-semibold text-dark dark:text-slate-300">Date</p>
               </div>
 
               <div className="min-w-[128px]">
-                <p className="text-custom-sm text-dark">Status</p>
+                <p className="text-custom-sm font-semibold text-dark dark:text-slate-300">Status</p>
               </div>
 
               <div className="min-w-[213px]">
-                <p className="text-custom-sm text-dark">Title</p>
+                <p className="text-custom-sm font-semibold text-dark dark:text-slate-300">Title</p>
               </div>
 
               <div className="min-w-[113px]">
-                <p className="text-custom-sm text-dark">Total</p>
+                <p className="text-custom-sm font-semibold text-dark dark:text-slate-300">Total</p>
               </div>
 
               <div className="min-w-[113px]">
-                <p className="text-custom-sm text-dark">Action</p>
+                <p className="text-custom-sm font-semibold text-dark dark:text-slate-300">Details</p>
               </div>
             </div>
           )}

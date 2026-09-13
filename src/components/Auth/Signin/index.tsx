@@ -25,11 +25,19 @@ const Signin = () => {
       return;
     }
 
+    const getRedirectUrl = () => {
+      if (typeof window !== "undefined") {
+        const param = new URLSearchParams(window.location.search).get("redirect");
+        if (param && param.startsWith("/")) return param;
+      }
+      return "/";
+    };
+
     try {
       setLoading(true);
       const result = await signInWithEmailAndPassword(auth, email, password);
       console.log("Logged in successfully:", result.user);
-      router.push("/"); // التوجيه للصفحة الرئيسية
+      router.push(getRedirectUrl());
     } catch (err: any) {
       if (
         err.code === "auth/invalid-credential" ||
@@ -53,10 +61,18 @@ const Signin = () => {
   // 2. دالة تسجيل الدخول بواسطة Google
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
+    const getRedirectUrl = () => {
+      if (typeof window !== "undefined") {
+        const param = new URLSearchParams(window.location.search).get("redirect");
+        if (param && param.startsWith("/")) return param;
+      }
+      return "/";
+    };
+
     try {
       const result = await signInWithPopup(auth, provider);
       console.log("Logged in with Google:", result.user);
-      router.push("/");
+      router.push(getRedirectUrl());
     } catch (err: any) {
       if (err.code !== "auth/popup-closed-by-user") {
         console.warn("Google sign-in error:", err.code);
@@ -206,7 +222,14 @@ const Signin = () => {
 
               <p className="text-center text-xs mt-4">
                 Don&apos;t have an account?
-                <Link href="/signup" className="text-dark ease-out duration-200 hover:text-blue pl-1">
+                <Link
+                  href={
+                    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("redirect")
+                      ? `/signup?redirect=${encodeURIComponent(new URLSearchParams(window.location.search).get("redirect")!)}`
+                      : "/signup"
+                  }
+                  className="text-dark dark:text-white font-medium ease-out duration-200 hover:text-blue dark:hover:text-blue-light pl-1"
+                >
                   Sign Up
                 </Link>
               </p>

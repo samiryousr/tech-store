@@ -28,10 +28,18 @@ const Signup = () => {
 
     setLoading(true);
 
+    const getRedirectUrl = () => {
+      if (typeof window !== "undefined") {
+        const param = new URLSearchParams(window.location.search).get("redirect");
+        if (param && param.startsWith("/")) return param;
+      }
+      return "/";
+    };
+
     try {
       const res = await createUserWithEmailAndPassword(auth, email, password);
       console.log("Account created successfully:", res.user);
-      router.push("/");
+      router.push(getRedirectUrl());
     } catch (err: any) {
       if (err.code === "auth/email-already-in-use") {
         setError("This email address is already registered.");
@@ -54,10 +62,18 @@ const Signup = () => {
   const handleGoogleSignUp = async () => {
     setError("");
     const provider = new GoogleAuthProvider();
+    const getRedirectUrl = () => {
+      if (typeof window !== "undefined") {
+        const param = new URLSearchParams(window.location.search).get("redirect");
+        if (param && param.startsWith("/")) return param;
+      }
+      return "/";
+    };
+
     try {
       const res = await signInWithPopup(auth, provider);
       console.log("Signed up with Google:", res.user);
-      router.push("/");
+      router.push(getRedirectUrl());
     } catch (err: any) {
       if (err.code !== "auth/popup-closed-by-user") {
         console.warn("Google Signup error:", err.code);
@@ -199,7 +215,14 @@ const Signup = () => {
 
               <p className="text-center text-xs mt-4">
                 Already have an account?
-                <Link href="/signin" className="text-dark ease-out duration-200 hover:text-blue pl-1">
+                <Link
+                  href={
+                    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("redirect")
+                      ? `/signin?redirect=${encodeURIComponent(new URLSearchParams(window.location.search).get("redirect")!)}`
+                      : "/signin"
+                  }
+                  className="text-dark dark:text-white font-medium ease-out duration-200 hover:text-blue dark:hover:text-blue-light pl-1"
+                >
                   Sign In
                 </Link>
               </p>
